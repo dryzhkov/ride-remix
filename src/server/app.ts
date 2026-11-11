@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
+import { STATUS_CODES } from 'node:http';
 import { apiPrefix, healthResponseSchema } from '../contracts/index';
 import type { ApiError } from '../contracts/index';
 
@@ -30,6 +31,17 @@ export async function createApp(webRoot = resolve('dist/web')) {
   });
 
   app.setErrorHandler((error, request, reply) => {
+    const statusCode = typeof error === 'object' && error !== null && 'statusCode' in error
+      ? error.statusCode
+      : undefined;
+    if (typeof statusCode === 'number' && Number.isInteger(statusCode) && statusCode >= 400 && statusCode < 500) {
+      const message = STATUS_CODES[statusCode] ?? 'Invalid request';
+      const body: ApiError = {
+        error: { code: message.toUpperCase().replaceAll(/[^A-Z0-9]+/g, '_'), message },
+      };
+      return reply.code(statusCode).send(body);
+    }
+
     request.log.error({ err: error }, 'Request failed');
     const body: ApiError = { error: { code: 'INTERNAL_ERROR', message: 'Request failed' } };
     return reply.code(500).send(body);
