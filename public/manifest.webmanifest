@@ -1,0 +1,10 @@
+{
+  "id": "/",
+  "name": "Ride Remix",
+  "short_name": "Ride Remix",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f4ee",
+  "theme_color": "#163d36"
+}

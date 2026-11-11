@@ -1,0 +1,133 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ride Remix API",
+    "version": "1.0.0",
+    "description": "Task 1 contract skeleton. Only health is implemented. Planned operations are listed in x-planned-operations until their schemas and handlers are delivered."
+  },
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Process is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok"
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "fieldErrors": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "Planned opaque HttpOnly session cookie. Protected writes additionally require CSRF protection."
+      }
+    }
+  },
+  "x-planned-operations": [
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login-links",
+      "task": 7,
+      "authentication": "public",
+      "description": "Request a magic link for an invited email. Generic 202 response."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/redeem",
+      "task": 7,
+      "authentication": "single-use token",
+      "description": "Redeem a login token and issue a session cookie."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/session",
+      "task": 7,
+      "authentication": "session cookie",
+      "description": "Return the current account, expiry, and CSRF token. Never cached."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "task": 7,
+      "authentication": "session cookie and CSRF",
+      "description": "Revoke the current session."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/shared-decks",
+      "task": 8,
+      "authentication": "session cookie and CSRF",
+      "description": "Publish an immutable deck snapshot. Account-scoped idempotency."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/shared-decks/{id}",
+      "task": 8,
+      "authentication": "public",
+      "description": "Retrieve a published snapshot by public link ID."
+    }
+  ]
+}

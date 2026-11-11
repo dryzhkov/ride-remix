@@ -1,0 +1,24 @@
+:root {
+  font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  color: #173c35;
+  background: #f5f4ee;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, a { -webkit-tap-highlight-color: transparent; }
+a { color: inherit; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 3px solid #a84c1b; outline-offset: 4px; }
+.app { max-width: 48rem; margin: auto; min-height: 100dvh; display: flex; flex-direction: column; }
+header { padding: 1.5rem; border-bottom: 1px solid #c9d1c8; }
+.brand { font-size: 1.25rem; font-weight: 750; text-decoration: none; }
+main { flex: 1; padding: 2rem 1.5rem; }
+h1 { font-size: clamp(2rem, 7vw, 3rem); letter-spacing: -0.04em; margin: 0 0 1rem; }
+p { line-height: 1.6; }
+nav { display: flex; gap: 0.5rem; padding: 1rem 1.5rem max(1rem, env(safe-area-inset-bottom)); border-top: 1px solid #c9d1c8; }
+nav button { flex: 1; min-height: 3rem; border: 0; border-radius: 0.5rem; background: transparent; color: inherit; }
+nav button[aria-current='page'] { color: #fff; background: #163d36; }

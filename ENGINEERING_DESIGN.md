@@ -41,11 +41,13 @@ Local repositories own reads/writes; domain code does not depend on IndexedDB. U
 
 ## Deck generation
 
-- Inputs: time budget (default **20 minutes**), focus (default **All skills**, or multiple selected focuses), and cones/logs/incline, each **available / unavailable / unspecified**.
+- Inputs: time budget (default **20 minutes**), focus (default **All skills**, or multiple selected focuses), and cones/obstacle/incline, each **available / unavailable / unspecified**.
+- Focus labels are Balance, Clutch / Throttle control, Body positioning, and Obstacle Crossing. Obstacle covers any usable obstacle, including rocks and logs. Isolated drills default to 10-minute practice blocks and combined drills to 15 minutes.
 - Exclude drills requiring explicitly unavailable equipment. Unspecified equipment does not exclude drills; show their requirements before practice.
 - Match any selected focus; All skills removes the focus filter. Select distinct eligible drills with randomized variety within the budget, using suggested durations. No history input.
 - If no drill fits, show the constraint causing the empty result and let the rider adjust it; do not silently violate it. Unused budget is acceptable.
 - Riders can swap, remove, reorder, and manually select drills to repeat from history. Swaps obey current filters; show updated planned time when manually editing.
+- Rut and sidehill drills are manually selectable with terrain requirements displayed and excluded from automatic generation in V1.
 - Persist generated entries immediately. Offline generation uses the installed library and local custom drills.
 
 ## Practice and history
@@ -99,7 +101,7 @@ Publishing and opening an unsaved link require connectivity. `/s/:id` previews t
 
 Convert [clinic reference](./olympia-clinic-drills.md) into a schema-validated, version-controlled general library. Deduplicate the repeated `collection` entry. Source contains 26 unique drill IDs, including unresolved material; do not infer missing techniques or publish unresolved cards.
 
-Author proposed durations, equipment/focus tags, setup, and instructions **after this design**, for architect review. Only approved cards enter the shipped library. Original schedule times and class durations are not practice-duration defaults. Clinic name, day labels, and source notes stay out of generated assets, screens, and shared payloads. Built-in library administration remains a repository change.
+Full card review is deferred by the architect. Implement with the provisional starter library in `DRILL_CARD_DRAFTS.md`: Cone Weave, Moving Outside-Peg Weight, and Collection. These support the core flow while content is polished later. Omit Collection's suspension/lift progression from the starter card. Other drafts can be added incrementally. Original schedule times and class durations are not practice-duration defaults. Clinic name, day labels, and source notes stay out of generated assets, screens, and shared payloads. Built-in library administration remains a repository change.
 
 ## Deployment and operations
 
@@ -115,7 +117,7 @@ Log API failures and publication counts without full custom payloads or local pr
 | --- | --- | --- |
 | 1 | Scaffold app, server, shared contracts, CI | TypeScript build, lint/type checks, separate domain/repository boundaries, OpenAPI skeleton, production container. |
 | 2 | Define schemas and local storage | Entity/revision schemas, IndexedDB migrations and repositories; atomic result/session updates; versioned backup merge with conflict report. |
-| 3 | Review and prepare starter content | Propose durations/tags/instructions after design; obtain architect review; ship only approved cards; validate no internal provenance leaks. |
+| 3 | Prepare provisional starter content | Structure the three designated starter cards with durations/tags/instructions. Validate schemas and absence of internal provenance. Full card review and content expansion follow implementation. |
 | 4 | Build Deck screen and generation | Optional inputs/defaults, three-state equipment, multi-focus filtering, budget selection, manual selection/swap/reorder, custom drill creation/copy/edit. |
 | 5 | Build Practice screen | Session snapshot, single active session, resume, skip/end early, one-question optional rating, duplicate-write protection. |
 | 6 | Build History screen | Sessions, counts, version-aware ratings and setup; create next deck and explicitly repeat drills. |
@@ -123,8 +125,9 @@ Log API failures and publication counts without full custom payloads or local pr
 | 8 | Implement snapshot sharing | Authenticated publishing, public GET contract, account-scoped retry idempotency, validation/quotas, link preview and atomic local save. |
 | 9 | Complete PWA and recovery | Installable manifest, shell/library caching, readiness/update states, offline flows, backup/restore UI; no auth caching or credentials in exports. |
 | 10 | Deploy and validate | Fly volume/single-Machine configuration, email sender/provider setup, backup/restore check, focused integration and device acceptance tests. |
+| 11 | Full card review and polish | After V1 implementation, review all 24 drafted cards with the architect in batches. Polish starter cards, resolve setup/technique gaps, confirm labels and durations, and expand the library. Revisit both deferred double-blip cards using the saved video reference. Track approval per card before adding reviewed content. |
 
-Tasks 4–6 depend on 2 and approved content from 3; task 7 depends on shared schemas and server storage; task 8 depends on 7; task 9 integrates the local flows; task 10 gates release.
+Tasks 4–6 depend on 2 and provisional starter content from 3. Full card review does not block implementation. Task 7 depends on shared schemas and server storage; task 8 depends on 7; task 9 integrates the local flows; task 10 gates release.
 
 ## Release verification
 
