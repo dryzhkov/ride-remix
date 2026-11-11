@@ -6,19 +6,23 @@ import './practice.css';
 export interface PracticeScreenProps {
   repository: PracticeRepository;
   onViewHistory: () => void;
+  sessionId?: string;
+  onSessionLoaded?: (id: string) => void;
+  onChooseDeck?: () => void;
 }
-export function PracticeScreen({ repository, onViewHistory }: PracticeScreenProps) {
-  const controller = useMemo(() => new PracticeController(repository), [repository]);
+export function PracticeScreen({ repository, onViewHistory, sessionId, onSessionLoaded, onChooseDeck }: PracticeScreenProps) {
+  const controller = useMemo(() => new PracticeController(repository, sessionId), [repository, sessionId]);
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
   const heading = useRef<HTMLHeadingElement>(null);
   const session = state.session;
   useEffect(() => { void controller.load(); }, [controller]);
   useEffect(() => { heading.current?.focus(); }, [state.rating, session?.currentEntry, session?.status]);
+  useEffect(() => { if (session && !sessionId) onSessionLoaded?.(session.id); }, [session, sessionId, onSessionLoaded]);
   const disabled = state.saving || state.failedSave;
   const entry = session?.status === 'active' ? session.deckSnapshot.entries[session.currentEntry] : undefined;
 
   return <section className="practice-screen" aria-labelledby="practice-title">
-    <h1 id="practice-title">Practice</h1>
+    <div className="page-heading"><p className="eyebrow">ONE DRILL AT A TIME</p><h1 id="practice-title">Practice</h1></div>
     {state.loading ? <p role="status">Loading saved practice…</p> : <>
       {state.error && <div className="practice-error" role="alert">
         <p>{state.error}</p>
@@ -29,7 +33,7 @@ export function PracticeScreen({ repository, onViewHistory }: PracticeScreenProp
       </div>}
       {!session && !state.error && <div className="practice-empty">
         <h2>No active practice</h2>
-        <p>Build or choose a deck on the Deck screen, then start practice. Your current drill will be saved here as you go.</p>
+        <p>Build or choose a deck on the Deck screen, then start practice. Your current drill will be saved here as you go.</p><button type="button" className="practice-primary" onClick={onChooseDeck}>Choose a deck</button>
       </div>}
       {session && session.status !== 'active' && <div className="practice-finish">
         <h2 ref={heading} tabIndex={-1}>{session.status === 'completed' ? 'Practice complete' : 'Session ended'}</h2>
@@ -55,13 +59,13 @@ export function PracticeScreen({ repository, onViewHistory }: PracticeScreenProp
           <h2 ref={heading} tabIndex={-1}>{entry.drill.title}</h2>
           <p className="practice-cue">{entry.drill.cue}</p>
           <p>Planned practice: {entry.plannedDurationMinutes} minutes. Practice freely, then select Done.</p>
-          <h3>Setup</h3>
+          <details className="practice-setup"><summary>Setup{entry.drill.requiredEquipment.length ? ` · ${entry.drill.requiredEquipment.join(', ')}` : ' · no equipment'}</summary>
           {entry.drill.setupDetails.length ? <ul>{entry.drill.setupDetails.map((detail, index) => <li key={index}>{detail}</li>)}</ul> : <p>No additional setup.</p>}
           {entry.drill.requiredEquipment.length > 0 && <p><strong>Equipment:</strong> {entry.drill.requiredEquipment.map(name => name === 'obstacle' ? 'usable obstacle' : name).join(', ')}</p>}
           {entry.drill.terrainRequirements.length > 0 && <p><strong>Terrain:</strong> {entry.drill.terrainRequirements.join(' · ')}</p>}
-          <h3>Instructions</h3>
+          </details><h3>Instructions</h3>
           <ol>{entry.drill.instructions.map((instruction, index) => <li key={index}>{instruction}</li>)}</ol>
-          <div className="practice-actions">
+          <div className="practice-actions practice-thumb-actions">
             <button type="button" className="practice-primary" disabled={disabled} onClick={() => controller.openRating()}>Done</button>
             <button type="button" disabled={disabled} onClick={() => void controller.skip()}>Skip drill</button>
           </div>

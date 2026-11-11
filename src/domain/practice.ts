@@ -24,7 +24,7 @@ export class PracticeController {
   private listeners = new Set<() => void>();
   private pending?: PendingWrite;
   private loadVersion = 0;
-  constructor(private repository: PracticeRepository) {}
+  constructor(private repository: PracticeRepository, private sessionId?: string) {}
   getSnapshot = () => this.state;
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
@@ -44,7 +44,8 @@ export class PracticeController {
       if (version !== this.loadVersion) return;
       const active = sessions.filter(s => s.status === 'active');
       if (active.length > 1) throw new Error('Multiple active sessions were found.');
-      this.publish({ loading: false, session: active[0] });
+      const session = this.sessionId ? sessions.find(s => s.id === this.sessionId) : active[0];
+      this.publish({ loading: false, session, error: this.sessionId && !session ? 'Practice session not found on this device. Open History or restore a backup in Settings.' : undefined });
     } catch {
       if (version === this.loadVersion) this.publish({ loading: false, error: 'Your saved practice could not be loaded. Please retry.' });
     }

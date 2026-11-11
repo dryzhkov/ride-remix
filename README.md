@@ -24,3 +24,15 @@ ESLint enforces dependency boundaries between the browser, server, domain, and c
 Run `docker build -t ride-remix .` and `docker run --rm -p 3000:3000 ride-remix`. The multi-stage image uses Node 24 and runs as an unprivileged user. `/healthz` reports process health. Unknown API routes return structured JSON errors. Browser navigation routes receive the application shell.
 
 Fly configuration, persistent SQLite storage, and email delivery configuration are delivered with the corresponding implementation tasks.
+
+## App routes and mobile layout
+
+- `/deck` lists saved decks; the **+ New deck** action opens `/deck/new`.
+- `/deck/:deckId` opens the saved deck for remixing, sharing, or starting practice.
+- `/practice` resumes the active session; `/practice/:sessionId` opens that exact snapshot, including completed sessions. Missing IDs show an error rather than another session.
+- `/history` shows session summaries and drill progression; `/settings` contains JSON backup/restore, storage protection, and offline update controls.
+- `/s/:id` and `/auth/*` retain their public-preview and sign-in behavior.
+
+Main navigation stays fixed with icon labels and safe-area spacing. Generation, library details, setup, and sharing use progressive disclosure to keep daily practice compact. Browser refresh/back/forward and saved data are covered by the app integration test.
+
+Task 10 validation also exercised headless Chrome at 320, 390, 820, and 1280px widths (no horizontal overflow; fixed navigation), plus production offline reloads of saved-deck, session, history, and settings routes. Physical iOS/Android acceptance remains part of release validation.

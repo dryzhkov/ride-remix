@@ -7,6 +7,7 @@ import { eligibleDrills, focusLabels, generateDrills } from '../../domain/genera
 import type { GenerationInputs } from '../../domain/generation';
 import type { PracticeRepository } from '../../domain/repository';
 import './deck.css';
+import { Icon } from '../ui/Icon';
 import { ShareDeckButton } from '../sharing/ShareDeckButton';
 
 const initialInputs: GenerationInputs = { timeBudgetMinutes: 20, focuses: [], equipment: { cones: 'unspecified', obstacle: 'unspecified', incline: 'unspecified' } };
@@ -23,8 +24,11 @@ export interface DeckScreenProps {
   repository: PracticeRepository;
   onStartPractice: (deckId: string) => void;
   selectedDeckId?: string;
+  mode: 'list' | 'new' | 'detail';
+  onOpenDeck: (deckId: string) => void;
+  onShowDecks: () => void;
 }
-export function DeckScreen({ repository, onStartPractice, selectedDeckId }: DeckScreenProps) {
+export function DeckScreen({ repository, onStartPractice, selectedDeckId, mode, onOpenDeck, onShowDecks }: DeckScreenProps) {
   const [inputs, setInputs] = useState<GenerationInputs>(initialInputs);
   const [library, setLibrary] = useState<DrillRevision[]>(getStarterLibrary().drills);
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -39,12 +43,12 @@ export function DeckScreen({ repository, onStartPractice, selectedDeckId }: Deck
     Promise.all([repository.listRevisions(), repository.listDecks()]).then(([revisions, saved]) => {
       if (cancelled) return;
       setLibrary(latest([...getStarterLibrary().drills, ...revisions])); setDecks(saved);
-      const chosen = saved.find(d => d.id === selectedDeckId) ?? [...saved].sort((a,b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+      const chosen = mode === 'detail' ? saved.find(d => d.id === selectedDeckId) : undefined;
       setDeck(chosen); if (chosen) setInputs(chosen.generationInputs);
       setBusy(false);
     }).catch(() => { if (!cancelled) { setError('Could not load your decks. Reopen Deck to try again.'); setBusy(false); } });
     return () => { cancelled = true; };
-  }, [repository, selectedDeckId]);
+  }, [repository, selectedDeckId, mode]);
   async function perform(action: () => Promise<void>) {
     if (busy) return;
     setBusy(true); setError(''); setNotice('');
@@ -56,6 +60,7 @@ export function DeckScreen({ repository, onStartPractice, selectedDeckId }: Deck
     await repository.saveDeck(validated);
     setDeck(validated); setDecks(previous => [...previous.filter(d => d.id !== validated.id), validated]);
     setNotice('Saved on this device.');
+    if (mode === 'new') onOpenDeck(validated.id);
   }
   async function generate() {
     await perform(async () => {
@@ -72,28 +77,39 @@ export function DeckScreen({ repository, onStartPractice, selectedDeckId }: Deck
   const used = new Set(deck?.entries.map(e => e.drill.id));
   const swaps = eligibleDrills(library, inputs).filter(d => !used.has(d.id));
   return <section className="deck-screen" aria-label="Build a practice deck">
-    <h1>Deck</h1><p>Choose your focus, then make this practice your own.</p>
+    <div className="page-heading"><p className="eyebrow">{mode === 'list' ? 'YOUR NEXT RIDE' : mode === 'new' ? 'MAKE TIME TO RIDE' : 'READY WHEN YOU ARE'}</p>
+    <h1>{mode === 'list' ? 'Your decks' : mode === 'new' ? 'New deck' : deck?.title ?? 'Deck'}</h1>
+    <p>{mode === 'list' ? 'A little practice. A better ride.' : mode === 'new' ? 'Choose your time and focus. We’ll mix the drills.' : 'Remix your drills, then get riding.'}</p></div>
+    {mode !== 'list' && <a className="back-link" href="/deck" onClick={event => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); onShowDecks(); } }}>← All decks</a>}
+    {mode === 'list' && !busy && (decks.length ? <div className="saved-deck-grid">{[...decks].sort((a,b) => b.updatedAt.localeCompare(a.updatedAt)).map(d => <article className="saved-deck-card" key={d.id}>
+      <div className="card-topline"><span className="deck-badge"><Icon name="deck" />{d.entries.length} drills</span><span>{d.entries.reduce((n,e) => n + e.plannedDurationMinutes, 0)} min</span></div>
+      <h2><a href={`/deck/${d.id}`} onClick={event => { if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && event.button === 0) { event.preventDefault(); onOpenDeck(d.id); } }}>{d.title}</a></h2>
+      <p className="deck-preview">{d.entries.map(e => e.drill.title).join(' · ')}</p>
+      <div className="deck-actions"><button className="deck-primary" disabled={busy} onClick={() => onStartPractice(d.id)}><Icon name="practice" />Start practice</button><button onClick={() => onOpenDeck(d.id)}>Remix deck</button></div>
+    </article>)}</div> : <div className="empty-card"><Icon name="deck" /><h2>Your next ride starts here</h2><p>Make a short practice deck from your time, focus, and available setup.</p><p>Tap <strong>+ New deck</strong> to get started.</p></div>)}
+    {busy && <p role="status">Loading your decks…</p>}
+    {mode === 'detail' && !busy && !deck && !error && <div className="empty-card"><h2>Deck not found</h2><p>This deck isn’t saved in this browser. Open your decks or restore a backup in Settings.</p></div>}
     {error && <p role="alert">{error}</p>}
     {notice && <p role="status">{notice}</p>}
-    <fieldset disabled={busy} className="deck-controls"><legend>Build your deck</legend>
+    {mode !== 'list' && (mode === 'new' || deck) && <details className="generation-card" open={mode === 'new'}><summary>{mode === 'new' ? 'Build your deck' : 'Swap filters'}</summary>
+    <fieldset disabled={busy} className="deck-controls"><legend className="sr-only">Deck inputs</legend>
       <label>Time budget (minutes)<input type="number" min="1" step="1" value={inputs.timeBudgetMinutes} onChange={e => setInputs({ ...inputs, timeBudgetMinutes: Number(e.target.value) })} /></label>
       <fieldset><legend>Skill focus</legend>
         <label className="deck-choice"><input type="checkbox" checked={!inputs.focuses.length} onChange={() => setInputs({ ...inputs, focuses: [] })} />All skills</label>
         {focuses.map(f => <label className="deck-choice" key={f}><input type="checkbox" checked={inputs.focuses.includes(f)} onChange={() => setInputs({ ...inputs, focuses: inputs.focuses.includes(f) ? inputs.focuses.filter(x => x !== f) : [...inputs.focuses, f] })} />{focusLabels[f]}</label>)}
       </fieldset>
-      <div className="deck-equipment">{equipment.map(e => <label key={e}>{e === 'obstacle' ? 'Obstacle (rock, log, or other)' : e[0].toUpperCase() + e.slice(1)}<select value={inputs.equipment[e]} onChange={event => setInputs({ ...inputs, equipment: { ...inputs.equipment, [e]: event.target.value as GenerationInputs['equipment'][typeof e] } })}>
-        <option value="unspecified">Unspecified</option><option value="available">Available</option><option value="unavailable">Unavailable</option>
+      <p className="equipment-hint">Equipment available</p><div className="deck-equipment">{equipment.map(e => <label key={e}>{e[0].toUpperCase() + e.slice(1)}<select value={inputs.equipment[e]} onChange={event => setInputs({ ...inputs, equipment: { ...inputs.equipment, [e]: event.target.value as GenerationInputs['equipment'][typeof e] } })}>
+        <option value="unspecified">Not set</option><option value="available">Yes</option><option value="unavailable">No</option>
       </select></label>)}</div>
-      <button className="deck-primary" onClick={() => void generate()}>Generate new deck</button>
-    </fieldset>
-    {decks.length > 0 && <label>Saved decks<select disabled={busy} value={deck?.id ?? ''} onChange={e => { const chosen = decks.find(d => d.id === e.target.value); setDeck(chosen); if (chosen) setInputs(chosen.generationInputs); setSwapId(undefined); setNotice(''); }}>
-      {decks.map(d => <option key={d.id} value={d.id}>{d.title} · {d.entries.reduce((n,e) => n + e.plannedDurationMinutes, 0)} min</option>)}
-    </select></label>}
-    {deck && <section aria-label="Your saved deck"><h2>{deck.title}</h2>
+      {mode === 'new' && <button className="deck-primary generate-action" onClick={() => void generate()}><Icon name="plus" />Generate new deck</button>}
+    </fieldset></details>}
+    {deck && <section className="deck-detail" aria-label="Your saved deck"><h2 className="sr-only">{deck.title}</h2>
       <p><strong>{deck.entries.reduce((n,e) => n + e.plannedDurationMinutes, 0)} minutes planned</strong> · {deck.entries.length} drills</p>
-      <p>Changes save automatically. Manual additions may exceed your time budget or need different equipment.</p>
+      <p className="subtle">Saved automatically · Manual additions can exceed your budget.</p>
+      <div className="deck-bottom-actions"><button className="deck-primary" disabled={busy} onClick={() => onStartPractice(deck.id)}><Icon name="practice" />Start practice</button>
+      <details className="deck-share"><summary>Share deck ↗</summary><ShareDeckButton repository={repository} deckId={deck.id} /></details></div>
       <ol className="deck-entries">{deck.entries.map((e, index) => <li key={e.id}>
-        <h3>{e.drill.title}</h3><p>{e.drill.cue}</p><Requirements drill={e.drill} />
+        <h3><span className="entry-number">{index + 1}</span>{e.drill.title}</h3><p>{e.drill.cue}</p><details><summary>Setup{e.drill.requiredEquipment.length ? ` · ${e.drill.requiredEquipment.join(', ')}` : ' · no equipment'}</summary><Requirements drill={e.drill} /></details>
         <label>Planned minutes<input disabled={busy} aria-label={`Minutes for ${e.drill.title}`} type="number" min="1" step="1" value={e.plannedDurationMinutes} onChange={event => { const minutes = Number(event.target.value); if (Number.isInteger(minutes) && minutes > 0) changeDeck({ ...deck, entries: deck.entries.map(x => x.id === e.id ? { ...x, plannedDurationMinutes: minutes } : x) }); }} /></label>
         <div className="deck-actions">
           <button disabled={busy || index === 0} aria-label={`Move ${e.drill.title} up`} onClick={() => { const entries = [...deck.entries]; [entries[index-1], entries[index]] = [entries[index], entries[index-1]]; changeDeck({ ...deck, entries }); }}>↑ Up</button>
@@ -105,10 +121,9 @@ export function DeckScreen({ repository, onStartPractice, selectedDeckId }: Deck
           {swaps.map(d => <button key={d.id} disabled={busy} onClick={() => { void perform(async () => { await save({ ...deck, generationInputs: structuredClone(inputs), entries: deck.entries.map(x => x.id === e.id ? { ...entry(d), id: e.id } : x) }); setSwapId(undefined); }); }}>Use {d.title} · {d.suggestedDurationMinutes} min</button>)}</div>}
       </li>)}</ol>
       {deck.entries.length === 1 && <p>Keep at least one drill in a saved deck.</p>}
-      <button className="deck-primary" disabled={busy} onClick={() => onStartPractice(deck.id)}>Start practice</button>
-      <ShareDeckButton repository={repository} deckId={deck.id} />
+
     </section>}
-    <section aria-label="Drill library"><h2>Drill library</h2><p>Pick any drill manually, including drills outside your generation filters.</p>
+    {mode !== 'list' && (mode === 'new' || deck) && <details className="library-panel"><summary>Drill library <span className="subtle">{library.length} drills · add or adapt</span></summary><section aria-label="Drill library"><h2 className="sr-only">Drill library</h2><p>Pick any drill manually, including drills outside your generation filters.</p>
       <button disabled={busy} onClick={() => setEditor({ copy: false })}>Create custom drill</button>
       <div className="deck-library">{library.map(d => <article key={d.id}><h3>{d.title}</h3><p>{d.cue}</p><p>{d.focusTags.map(f => focusLabels[f]).join(' · ')} · {d.suggestedDurationMinutes} min</p><Requirements drill={d} />
         <details><summary>Practice guide</summary><ol>{d.instructions.map((line, i) => <li key={i}>{line}</li>)}</ol></details>
@@ -119,7 +134,7 @@ export function DeckScreen({ repository, onStartPractice, selectedDeckId }: Deck
         <button disabled={busy} onClick={() => setEditor({ drill: d, copy: true })}>Copy and adapt</button>
         {d.origin === 'custom' && <button disabled={busy} onClick={() => setEditor({ drill: d, copy: false })}>Edit custom drill</button>}</div>
       </article>)}</div>
-    </section>
+    </section></details>}
     {editor && <DrillEditor key={`${editor.drill?.revisionId ?? 'new'}-${editor.copy}`} drill={editor.drill} copy={editor.copy} busy={busy} onCancel={() => setEditor(undefined)} onSave={revision => void perform(async () => {
       await repository.saveRevision(revision);
       setLibrary(previous => latest([...previous, revision])); setEditor(undefined);

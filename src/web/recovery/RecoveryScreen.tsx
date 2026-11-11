@@ -13,9 +13,8 @@ export function RecoveryScreen({ repository, onImported }: { repository: Practic
     try { await action(); } catch (e) { setError(e instanceof Error ? e.message : 'Storage operation failed. Please try again.'); }
     finally { setBusy(false); }
   }
-  return <section className="recovery-screen"><h1>Backup and recovery</h1>
-    <p>Your decks, custom drills, and practice history live in this browser. They do not sync with your account. Clearing browser data or storage eviction can erase them. Keep a JSON backup somewhere you can find again.</p>
-    <p>Signing in on another device restores publishing access. Restore a backup to bring your local practice data with you. Backups exclude login credentials and account details.</p>
+  return <section className="recovery-screen"><h2>Backup and recovery</h2>
+    <p>Your decks and history stay in this browser and do not sync. Keep a backup before clearing data or changing devices.</p><details><summary>About your local data</summary><p>Browser storage eviction can erase local data. Signing in restores publishing access, not practice data. Backups contain your decks, custom drills, and history, without credentials or account details.</p></details>
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
     <button disabled={busy} onClick={() => void run(async () => {
       const text = await exportBackup(repository); const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));

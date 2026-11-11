@@ -10,7 +10,7 @@ function message(worker: ServiceWorker, type: string): Promise<{ ready?: boolean
     worker.postMessage({ type }, [channel.port2]);
   });
 }
-export function PwaStatus({ repository }: { repository: PracticeRepository }) {
+export function PwaStatus({ repository, compact = false }: { repository: PracticeRepository; compact?: boolean }) {
   const [status, setStatus] = useState('Checking offline availability…');
   const [registration, setRegistration] = useState<ServiceWorkerRegistration>();
   const [waiting, setWaiting] = useState(false);
@@ -54,10 +54,10 @@ export function PwaStatus({ repository }: { repository: PracticeRepository }) {
       location.reload();
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not apply the update.'); } finally { setBusy(false); }
   }
-  return <aside className="pwa-status" aria-label="Offline availability">
+  return <aside className={`pwa-status${compact ? ' pwa-compact' : ''}`} aria-label="Offline availability">
     <p role="status">{!import.meta.env?.PROD ? 'Offline installation is available in the production build.' : !('serviceWorker' in navigator) ? 'This browser does not support offline installation.' : status}</p>
     {waiting && <><p>An app and library update is ready. Apply it between practice sessions.</p><button disabled={busy} onClick={() => void apply()}>Apply update</button></>}
-    {registration && <button disabled={busy} onClick={() => { void registration.update().catch(() => setError('Could not check for updates. Reconnect and try again.')); }}>Check for updates</button>}
+    {registration && !compact && <button disabled={busy} onClick={() => { void registration.update().catch(() => setError('Could not check for updates. Reconnect and try again.')); }}>Check for updates</button>}
     {error && <p role="alert">{error}</p>}
   </aside>;
 }

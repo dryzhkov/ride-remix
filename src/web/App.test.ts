@@ -22,6 +22,7 @@ registerHooks({
 
 test('application entry connects practice, sharing, recovery and production worker registration', async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'https://ride.test/' });
+  dom.window.scrollTo = () => undefined;
   let registrations = 0;
   const serviceWorker = {
     controller: null,
@@ -62,16 +63,25 @@ test('application entry connects practice, sharing, recovery and production work
     assert.fail(`UI did not settle: ${container.textContent}`);
   }
   async function click(label: string) {
-    const button = [...container.querySelectorAll('button')].find(button => button.textContent === label);
+    const button = [...container.querySelectorAll<HTMLButtonElement | HTMLAnchorElement>('button, a')].find(button => button.textContent?.trim() === label);
     assert.ok(button, `Missing button ${label}`);
-    assert.equal(button.disabled, false, `Disabled button ${label}`);
+    if ('disabled' in button) assert.equal(button.disabled, false, `Disabled button ${label}`);
     await act(async () => { button.click(); });
   }
   try {
     await act(async () => { root.render(createElement(StrictMode, null, createElement(App))); });
+    await settle(() => !!container.querySelector('.empty-card'));
+    assert.equal(dom.window.location.pathname, '/deck');
+    assert.equal(container.querySelector('.deck-controls'), null);
+    assert.equal(container.querySelectorAll('.bottom-nav a').length, 4);
+    await click('New deck');
+    assert.equal(dom.window.location.pathname, '/deck/new');
     await settle(() => !!container.querySelector('.deck-screen fieldset:not(:disabled)'));
     await click('Generate new deck');
     await settle(() => [...container.querySelectorAll('button')].some(button => button.textContent === 'Start practice'));
+    assert.match(dom.window.location.pathname, /^\/deck\/[\da-f-]{36}$/);
+    assert.equal(container.querySelector('.fab'), null);
+    await act(async () => { container.querySelector<HTMLDetailsElement>('.deck-share')!.open = true; });
     await click('Publish deck link');
     await settle(() => !!container.querySelector('.sharing-url'));
     assert.equal(published, true);
@@ -79,6 +89,8 @@ test('application entry connects practice, sharing, recovery and production work
     await click('Start practice');
     await settle(() => !!container.querySelector('.practice-drill'));
     assert.equal((await repository.listSessions()).length, 1);
+    const firstSessionId = (await repository.listSessions())[0].id;
+    assert.equal(dom.window.location.pathname, `/practice/${firstSessionId}`);
     // A remount simulates reloading the app with an unfinished persisted session.
     await act(async () => { root.unmount(); });
     root = createRoot(container);
@@ -93,6 +105,15 @@ test('application entry connects practice, sharing, recovery and production work
     await settle(() => !!container.querySelector('.history-sessions'));
     assert.match(container.textContent!, /2 done/);
     assert.equal((await repository.listResults()).length, 2);
+    assert.equal(dom.window.location.pathname, '/history');
+    // Browser Back restores the completed session URL and its immutable finish view.
+    await act(async () => { dom.window.history.back(); await new Promise(resolve => setTimeout(resolve, 30)); });
+    await settle(() => !!container.querySelector('.practice-finish'));
+    assert.equal(dom.window.location.pathname, `/practice/${firstSessionId}`);
+    await act(async () => { dom.window.history.forward(); await new Promise(resolve => setTimeout(resolve, 30)); });
+    await settle(() => !!container.querySelector('.history-sessions'));
+    assert.equal(dom.window.location.pathname, '/history');
+    await act(async () => { container.querySelector<HTMLDetailsElement>('.history-drills')!.open = true; });
     // History can build a deck and route to its editor.
     const checkbox = container.querySelector<HTMLInputElement>('.history-selection input')!;
     await act(async () => { checkbox.click(); });
@@ -103,13 +124,16 @@ test('application entry connects practice, sharing, recovery and production work
     await click('Repeat this deck');
     await settle(() => !!container.querySelector('.practice-drill'));
     assert.equal((await repository.listSessions()).length, 2);
-    await click('Backup and recovery');
+    await click('Settings');
+    assert.equal(dom.window.location.pathname, '/settings');
     assert.ok(container.querySelector('.recovery-screen'));
     let download = '';
+    const originalClick = dom.window.HTMLAnchorElement.prototype.click;
     dom.window.HTMLAnchorElement.prototype.click = function () { download = this.download; };
     await click('Download JSON backup');
     await settle(() => container.textContent!.includes('Backup download requested.'));
     assert.match(download, /^ride-remix-backup-.*\.json$/);
+    dom.window.HTMLAnchorElement.prototype.click = originalClick;
     // Restore a backup through the actual file-input handler and retain the report.
     const archive = JSON.stringify(await repository.exportArchive());
     const input = container.querySelector<HTMLInputElement>('input[type=file]')!;
@@ -118,7 +142,10 @@ test('application entry connects practice, sharing, recovery and production work
     await settle(() => container.textContent!.includes('Backup import finished.'));
     assert.ok(container.querySelector('[aria-label="Import report"]'));
     await click('Deck');
-    await settle(() => !!container.querySelector('.sharing-publish'));
+    await settle(() => !!container.querySelector('.saved-deck-grid'));
+    assert.equal(dom.window.location.pathname, '/deck');
+    assert.ok(container.querySelector('.fab'));
+    assert.equal(container.querySelector('.deck-controls'), null);
     // Direct shared links take precedence over resuming an existing session.
     await act(async () => { root.unmount(); });
     dom.window.history.replaceState(null, '', `/s/${publicId}`);
@@ -128,9 +155,34 @@ test('application entry connects practice, sharing, recovery and production work
     const count = (await repository.listDecks()).length;
     await click('Save a copy');
     await settle(() => [...container.querySelectorAll('button')].some(button => button.textContent === 'Start practice' && !button.disabled));
-    assert.equal(dom.window.location.pathname, '/');
+    assert.match(dom.window.location.pathname, /^\/deck\/[\da-f-]{36}$/);
     assert.equal((await repository.listDecks()).length, count + 1);
     assert.match(container.textContent!, /Start practice/);
+    // A valid but unavailable deck ID must never silently select another saved deck.
+    const missing = crypto.randomUUID();
+    async function visit(path: string) {
+      await act(async () => {
+        dom.window.history.pushState(null, '', path);
+        dom.window.dispatchEvent(new dom.window.PopStateEvent('popstate'));
+      });
+    }
+    await visit(`/deck/${missing}`);
+    await settle(() => container.textContent!.includes('Deck not found'));
+    assert.equal(container.querySelector('.deck-detail'), null);
+    await visit(`/practice/${missing}`);
+    await settle(() => container.textContent!.includes('Practice session not found'));
+    assert.equal(container.querySelector('.practice-drill'), null);
+    // Explicit routes are respected even when there is an active session.
+    await visit(`/practice/${firstSessionId}`);
+    await settle(() => !!container.querySelector('.practice-finish'));
+    assert.equal(container.querySelector('.practice-drill'), null);
+    await visit('/practice');
+    await settle(() => !!container.querySelector('.practice-drill'));
+    assert.match(dom.window.location.pathname, /^\/practice\/[\da-f-]{36}$/);
+    await visit('/not-a-page');
+    assert.match(container.textContent!, /Page not found/);
+    assert.equal((await repository.listSessions()).length, 2);
+
 
   } finally {
     await act(async () => { root.unmount(); });

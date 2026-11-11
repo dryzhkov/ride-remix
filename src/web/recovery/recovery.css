@@ -5,3 +5,5 @@
 .recovery-screen details { margin: .7rem 0; overflow-wrap: anywhere; }
 .recovery-screen [role=alert] { color: #9b301b; }
 .recovery-screen [role=status] { padding: .7rem; background: #e3ebdf; }
+.recovery-screen, .recovery-screen label { min-width: 0; }
+.recovery-screen input[type=file] { width: 100%; min-width: 0; }

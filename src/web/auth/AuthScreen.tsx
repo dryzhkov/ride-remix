@@ -55,6 +55,6 @@ export function AuthScreen() {
     </form>}
     {message && <p role="status">{message}</p>}
     {error && <p role="alert">{error}</p>}
-    <p><a href="/">Back to practice</a></p>
+    <p><a href="/deck">Back to decks</a></p>
   </main>;
 }

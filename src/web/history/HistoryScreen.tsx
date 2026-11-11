@@ -8,6 +8,7 @@ import './history.css';
 export interface HistoryScreenProps {
   repository: PracticeRepository;
   onEditDeck: (deckId: string) => void;
+  onViewSession?: (sessionId: string) => void;
   onStartPractice: (deckId: string) => void;
 }
 const statusLabels = { active: 'In progress', completed: 'Completed', 'ended-early': 'Ended early' };
@@ -16,7 +17,7 @@ function Setup({ details }: { details: string[] }) {
   return details.length ? <ul>{details.map((line, i) => <li key={i}>{line}</li>)}</ul> : <p>No setup details recorded.</p>;
 }
 
-export function HistoryScreen({ repository, onEditDeck, onStartPractice }: HistoryScreenProps) {
+export function HistoryScreen({ repository, onEditDeck, onStartPractice, onViewSession }: HistoryScreenProps) {
   const [summary, setSummary] = useState<HistorySummary>();
   const [error, setError] = useState<string>();
   const [reload, setReload] = useState(0);
@@ -47,14 +48,14 @@ export function HistoryScreen({ repository, onEditDeck, onStartPractice }: Histo
   }
   const active = summary?.sessions.some(item => item.session.status === 'active');
   return <section className="history-screen" aria-labelledby="history-title">
-    <h1 id="history-title">History</h1>
-    <p>Your practice on this device. Choose what you want to bring into your next ride.</p>
+<div className="page-heading"><p className="eyebrow">EVERY RIDE ADDS UP</p><h1 id="history-title">History</h1><p>Your progress, one practice at a time.</p></div>
     {error && <div role="alert"><p>{error}</p>{!summary && <button type="button" onClick={() => setReload(value => value + 1)}>Try again</button>}</div>}
     {!summary && !error && <p role="status">Loading history…</p>}
     {summary && summary.sessions.length === 0 && <p>No practice sessions yet. Build a deck and start practicing to see your progress here.</p>}
     {summary && summary.sessions.length > 0 && <>
       {active && <p className="history-notice">A session is in progress. You can prepare your next deck, or open Practice to resume it.</p>}
-      <section aria-labelledby="drill-history-title">
+      <div className="history-stats"><article><strong>{summary.sessions.length}</strong><span>sessions</span></article><article><strong>{summary.drills.reduce((n,d) => n + d.completedCount, 0)}</strong><span>drills completed</span></article><article><strong>{summary.drills.length}</strong><span>skills practiced</span></article></div>
+      <details className="history-drills"><summary>Your drills <span className="subtle">Select for your next ride</span></summary><section aria-labelledby="drill-history-title">
         <h2 id="drill-history-title">Your drills</h2>
         <p>Completed counts include Done, with or without a rating. Skipped drills do not count.</p>
         {summary.drills.length === 0 && <p>No drills recorded yet.</p>}
@@ -80,10 +81,10 @@ export function HistoryScreen({ repository, onEditDeck, onStartPractice }: Histo
             {busy ? 'Saving…' : `Build next deck${selected.length ? ` (${selected.length})` : ''}`}
           </button>
         </>}
-      </section>
+      </section></details>
       <section aria-labelledby="recent-sessions-title"><h2 id="recent-sessions-title">Recent sessions</h2>
         <ol className="history-sessions">{summary.sessions.map(item => <li className="history-card" key={item.session.id}>
-          <h3>{item.session.deckSnapshot.title}</h3>
+          <h3><a href={`/practice/${item.session.id}`} onClick={event => { if (onViewSession && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && event.button === 0) { event.preventDefault(); onViewSession(item.session.id); } }}>{item.session.deckSnapshot.title}</a></h3>
           <p><time dateTime={item.session.startedAt}>{date(item.session.startedAt)}</time> · {statusLabels[item.session.status]}</p>
           <p>{item.completedCount} done · {item.skippedCount} skipped · {item.unattemptedCount} unattempted</p>
           <details><summary>Session details</summary>

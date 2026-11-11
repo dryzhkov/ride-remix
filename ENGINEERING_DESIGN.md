@@ -124,10 +124,22 @@ Log API failures and publication counts without full custom payloads or local pr
 | 7 | Implement invite-only authentication | Account/token/session migrations, email adapter and operator CLI, invitation/login/confirmation UI, single-use redemption, session/logout/CSRF contracts, throttling and revocation. | Complete |
 | 8 | Implement snapshot sharing | Authenticated publishing, public GET contract, account-scoped retry idempotency, validation/quotas, link preview and atomic local save. | In progress |
 | 9 | Complete PWA and recovery | Installable manifest, shell/library caching, readiness/update states, offline flows, backup/restore UI; no auth caching or credentials in exports. | In progress |
-| 10 | Deploy and validate | Fly volume/single-Machine configuration, email sender/provider setup, backup/restore check, focused integration and device acceptance tests. | Not started |
-| 11 | Full card review and polish | After V1 implementation, review all 24 drafted cards with the architect in batches. Polish starter cards, resolve setup/technique gaps, confirm labels and durations, and expand the library. Revisit both deferred double-blip cards using the saved video reference. Track approval per card before adding reviewed content. | Not started |
+| 10 | UI redesign and polish | Mobile-first compact card/bento layouts, clear thumb-friendly actions and contextual FAB, fixed bottom navigation with icons and safe-area spacing; dedicated /deck, /deck/new, /deck/:deckId, /practice, /practice/:sessionId, and /history routes with working refresh/back/forward; Settings contains backup/recovery; correct select-arrow padding and control margins; accessible responsive polish and focused routing/flow checks. | Complete |
+| 11 | Deploy and validate | Fly volume/single-Machine configuration, email sender/provider setup, backup/restore check, focused integration and device acceptance tests. | Not started |
+| 12 | Full card review and polish | After V1 implementation, review all 24 drafted cards with the architect in batches. Polish starter cards, resolve setup/technique gaps, confirm labels and durations, and expand the library. Revisit both deferred double-blip cards using the saved video reference. Track approval per card before adding reviewed content. | Not started |
 
-Tasks 4–6 depend on 2 and provisional starter content from 3. Full card review does not block implementation. Task 7 depends on shared schemas and server storage; task 8 depends on 7; task 9 integrates the local flows; task 10 gates release.
+Tasks 4–6 depend on 2 and provisional starter content from 3. Full card review does not block implementation. Task 7 depends on shared schemas and server storage; task 8 depends on 7; task 9 integrates the local flows; task 10 polishes the integrated UI after tasks 4–9; task 11 gates release.
+
+## UI redesign requirements (task 10)
+
+- Design mobile first, minimizing unnecessary vertical scrolling while preserving visual clarity, fast scanning, readable content, and thumb-friendly controls.
+- Keep Deck, Practice, and History navigation fixed at the bottom when scrolling. Use icons with visible labels and reserve content space above the bar, including device safe areas.
+- Give each main screen its own URL: `/deck`, `/practice`, and `/history`. Use `/deck/:deckId` for saved decks and `/practice/:sessionId` for practice sessions. Support direct navigation, refresh, and browser back/forward without losing local state.
+- Make generating a new deck an explicit action from `/deck`, opening `/deck/new` rather than showing the generation form by default.
+- Organize content into compact cards and responsive bento layouts with a clear thumb-zone hierarchy. Show a “+ New deck” floating action button on `/deck` that opens `/deck/new`. Use contextual actions elsewhere only when useful.
+- Review all dropdowns for consistent margins, control padding, and arrow spacing.
+- Move backup/recovery into a Settings menu/page (`/settings`). Add a Settings gear with a visible label to the fixed bottom navigation.
+- Preserve existing practice, sharing, authentication, offline, and recovery behavior. Validate mobile layouts, keyboard/focus accessibility, routing, and critical connected flows.
 
 ## Release verification
 
