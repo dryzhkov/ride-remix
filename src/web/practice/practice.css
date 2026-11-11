@@ -1,0 +1,22 @@
+.practice-screen { max-width: 42rem; }
+.practice-screen h2 { font-size: clamp(1.5rem, 5vw, 2rem); line-height: 1.2; margin: 1.3rem 0 .8rem; }
+.practice-screen h2:focus { outline: none; }
+.practice-screen h3 { margin: 1.5rem 0 .5rem; }
+.practice-progress { font-size: .95rem; margin-bottom: .5rem; }
+.practice-screen progress { width: 100%; height: .5rem; accent-color: #163d36; }
+.practice-cue { font-size: 1.25rem; font-weight: 650; padding: 1rem; background: #e6ece3; border-left: 4px solid #456e53; border-radius: .25rem; }
+.practice-screen li { padding: .25rem 0; line-height: 1.65; }
+.practice-screen ul, .practice-screen ol { padding-left: 1.4rem; }
+.practice-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1.5rem 0 .75rem; }
+.practice-screen button { min-height: 3rem; padding: .75rem 1.1rem; border: 1px solid #809b8b; border-radius: .6rem; background: #fffefa; color: #173c35; font: inherit; }
+.practice-screen button.practice-primary { background: #163d36; color: #fff; border-color: #163d36; }
+.practice-screen button:disabled { opacity: .6; cursor: wait; }
+.practice-feel-options { display: grid; gap: .75rem; margin: 1.5rem 0; }
+.practice-feel-options button { text-align: left; font-weight: 650; }
+.practice-screen button.practice-end { border: 0; background: transparent; padding-left: 0; text-decoration: underline; text-underline-offset: .25rem; }
+.practice-save-status { font-size: .9rem; color: #52655a; }
+.practice-error { padding: 1rem; background: #fff0e8; border: 1px solid #c98062; border-radius: .6rem; }
+.practice-error p { margin-top: 0; }
+.practice-error .practice-actions { margin-bottom: 0; }
+.practice-finish, .practice-empty { padding: .5rem 0 1.5rem; }
+@media (max-width: 380px) { .practice-actions { flex-direction: column; } }
