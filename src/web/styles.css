@@ -22,3 +22,10 @@ p { line-height: 1.6; }
 nav { display: flex; gap: 0.5rem; padding: 1rem 1.5rem max(1rem, env(safe-area-inset-bottom)); border-top: 1px solid #c9d1c8; }
 nav button { flex: 1; min-height: 3rem; border: 0; border-radius: 0.5rem; background: transparent; color: inherit; }
 nav button[aria-current='page'] { color: #fff; background: #163d36; }
+
+.account-link { float: right; }
+.auth-screen form { display: grid; gap: 1rem; max-width: 28rem; }
+.auth-screen input { font: inherit; min-height: 3rem; padding: .75rem; border: 1px solid #7c9188; border-radius: .5rem; }
+.auth-action { padding: .85rem 1.1rem; border: 0; border-radius: .5rem; color: #fff; background: #163d36; min-height: 3rem; }
+.auth-action:disabled { opacity: .6; cursor: wait; }
+.auth-screen [role=alert] { color: #9b301b; }

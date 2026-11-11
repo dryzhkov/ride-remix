@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "libraryVersion": 1,
+  "drills": [
+    {
+      "schemaVersion": 1,
+      "id": "18be1346-455b-4ad9-8a2a-2d4b04734093",
+      "revisionId": "39b47a0c-29a7-441f-9bc6-05dc51422e71",
+      "origin": "built-in",
+      "title": "Cone Weave",
+      "cue": "Head over foot. Outside peg. Steady RPM.",
+      "instructions": [
+        "Weave through the cones, combining head-over-foot alignment, outside-peg weighting, and clutch control at steady RPM.",
+        "Adjust spacing as you practice."
+      ],
+      "setupDetails": [
+        "Use an open riding area.",
+        "Start with 9–10 cones in a line. Count and spacing are flexible.",
+        "Begin with wide gaps and progressively bring the cones closer together."
+      ],
+      "focusTags": ["balance", "clutch-throttle"],
+      "requiredEquipment": ["cones"],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-10T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "1f2bc57c-3a94-4866-9f90-149c772d9e02",
+      "revisionId": "19c248f2-6503-4fc5-a43a-93504c127c13",
+      "origin": "built-in",
+      "title": "Moving Outside-Peg Weight",
+      "cue": "Head over foot. Weight the outside peg.",
+      "instructions": [
+        "While moving, align your head over the outside foot and weight that peg.",
+        "Progress toward full steering lock while maintaining the alignment.",
+        "Practice turns in both directions."
+      ],
+      "setupDetails": ["Use an open riding area."],
+      "focusTags": ["balance", "body-positioning"],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-10T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "8200e165-97cd-4d53-90c9-98a3c8e459a4",
+      "revisionId": "5c42903c-6260-4592-b789-0f6d1ddf9782",
+      "origin": "built-in",
+      "title": "Collection",
+      "cue": "Throttle on, throttle off, clutch out, clutch in. Keep the two actions separate.",
+      "instructions": [
+        "Start with the clutch fully pulled in.",
+        "Apply throttle, then close it.",
+        "Only after the throttle is closed, release the clutch, then pull it fully back in.",
+        "Repeat, preserving the separation between throttle input and clutch release.",
+        "Practice in motion and stationary with feet on the ground where possible."
+      ],
+      "setupDetails": ["Use flat ground. An incline is optional."],
+      "focusTags": ["clutch-throttle"],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-10T00:00:00Z"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AuthScreen } from './auth/AuthScreen';
 
 const screens = ['Deck', 'Practice', 'History'] as const;
 type Screen = (typeof screens)[number];
@@ -11,10 +12,11 @@ const descriptions: Record<Screen, string> = {
 
 export function App() {
   const [screen, setScreen] = useState<Screen>('Deck');
+  if (location.pathname.startsWith('/auth/')) return <div className="app"><header><a className="brand" href="/">Ride Remix</a><a className="account-link" href="/auth/login">Account</a></header><AuthScreen /></div>;
 
   return (
     <div className="app">
-      <header><a className="brand" href="/">Ride Remix</a></header>
+      <header><a className="brand" href="/">Ride Remix</a><a className="account-link" href="/auth/login">Account</a></header>
       <main id="main-content">
         <h1>{screen}</h1>
         <p>{descriptions[screen]}</p>
