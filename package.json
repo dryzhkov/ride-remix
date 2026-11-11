@@ -12,11 +12,13 @@
     "lint": "eslint .",
     "build": "npm run typecheck && vite build && tsup src/server/index.ts --format esm --platform node --target node24 --out-dir dist/server --clean",
     "start": "node dist/server/index.js",
-    "check": "npm run lint && npm run build"
+    "check": "npm run lint && npm test && npm run build",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@fastify/static": "^10.1.10",
     "fastify": "^5.12.8",
+    "idb": "^8.0.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "zod": "^4.6.7"
@@ -30,6 +32,7 @@
     "concurrently": "^10.0.7",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "fake-indexeddb": "^6.2.8",
     "globals": "^17.14.0",
     "tsup": "^9.0.0",
     "tsx": "^4.23.15",

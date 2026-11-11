@@ -6,18 +6,18 @@ A mobile-first motorcycle practice PWA. The scaffold provides the React applicat
 
 Use Node 24 or newer and npm. Run `npm ci`, then `npm run dev`. Vite prints the frontend URL and proxies `/api` and `/healthz` to the local Node service on port 3000.
 
-Run `npm run check` for lint, strict TypeScript checks, and production builds. Run `npm start` after building to serve both the application and HTTP API at `http://localhost:3000`. `PORT` overrides the server port. The development proxy targets port 3000.
+Run `npm run check` for lint, local storage tests, strict TypeScript checks, and production builds. Run `npm test` for the storage tests alone. Run `npm start` after building to serve both the application and HTTP API at `http://localhost:3000`. `PORT` overrides the server port. The development proxy targets port 3000.
 
 ## Layout
 
 - `src/web` contains the React UI and browser HTTP client.
-- `src/domain` will hold pure domain entities and logic.
-- `src/repositories` will hold local repository contracts and IndexedDB adapters.
+- `src/domain` contains validated practice entities, archive schemas, and the repository interface.
+- `src/repositories` contains the IndexedDB adapter and storage integration tests.
 - `src/contracts` contains runtime schemas and inferred API types.
 - `src/server` contains HTTP routes and will hold server persistence adapters.
 - `openapi.json` describes implemented HTTP contracts and marks the V1 routes reserved for subsequent tasks.
 
-ESLint enforces dependency boundaries between the browser, server, domain, and contracts. Task 2 adds domain/storage schemas. Later tasks add authentication, sharing, offline caching, install icons, and feature screens. The web manifest establishes the PWA entry point. Offline readiness is delivered in task 9.
+ESLint enforces dependency boundaries between the browser, server, domain, and contracts. Domain/storage schemas and local persistence are implemented. Later tasks add authentication, sharing, offline caching, install icons, and feature screens. The web manifest establishes the PWA entry point. Offline readiness is delivered in task 9.
 
 ## Container
 
