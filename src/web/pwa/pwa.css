@@ -1,0 +1,4 @@
+.pwa-status { margin: 1rem 0; padding: .8rem 1rem; background: #e8eee3; border: 1px solid #c9d1c8; border-radius: .6rem; font-size: .9rem; }
+.pwa-status p { margin: .3rem 0; }
+.pwa-status button { font: inherit; padding: .5rem .8rem; margin: .4rem .5rem .2rem 0; border: 1px solid #7c9188; border-radius: .4rem; background: #fff; color: inherit; }
+.pwa-status [role=alert] { color: #9b301b; }

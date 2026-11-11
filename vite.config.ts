@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { pwaBuild } from './src/web/pwa/build';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), pwaBuild()],
   build: { outDir: 'dist/web' },
   server: {
     proxy: {

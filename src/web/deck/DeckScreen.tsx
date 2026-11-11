@@ -7,6 +7,7 @@ import { eligibleDrills, focusLabels, generateDrills } from '../../domain/genera
 import type { GenerationInputs } from '../../domain/generation';
 import type { PracticeRepository } from '../../domain/repository';
 import './deck.css';
+import { ShareDeckButton } from '../sharing/ShareDeckButton';
 
 const initialInputs: GenerationInputs = { timeBudgetMinutes: 20, focuses: [], equipment: { cones: 'unspecified', obstacle: 'unspecified', incline: 'unspecified' } };
 const focuses = Object.keys(focusLabels) as (keyof typeof focusLabels)[];
@@ -105,6 +106,7 @@ export function DeckScreen({ repository, onStartPractice, selectedDeckId }: Deck
       </li>)}</ol>
       {deck.entries.length === 1 && <p>Keep at least one drill in a saved deck.</p>}
       <button className="deck-primary" disabled={busy} onClick={() => onStartPractice(deck.id)}>Start practice</button>
+      <ShareDeckButton repository={repository} deckId={deck.id} />
     </section>}
     <section aria-label="Drill library"><h2>Drill library</h2><p>Pick any drill manually, including drills outside your generation filters.</p>
       <button disabled={busy} onClick={() => setEditor({ copy: false })}>Create custom drill</button>

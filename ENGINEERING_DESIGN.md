@@ -117,13 +117,13 @@ Log API failures and publication counts without full custom payloads or local pr
 | --- | --- | --- | --- |
 | 1 | Scaffold app, server, shared contracts, CI | TypeScript build, lint/type checks, separate domain/repository boundaries, OpenAPI skeleton, production container. | Complete |
 | 2 | Define schemas and local storage | Entity/revision schemas, IndexedDB migrations and repositories; atomic result/session updates; versioned backup merge with conflict report. | Complete |
-| 3 | Prepare provisional starter content | Structure the three designated starter cards with durations/tags/instructions. Validate schemas and absence of internal provenance. Full card review and content expansion follow implementation. | Not started |
-| 4 | Build Deck screen and generation | Optional inputs/defaults, three-state equipment, multi-focus filtering, budget selection, manual selection/swap/reorder, custom drill creation/copy/edit. | Not started |
-| 5 | Build Practice screen | Session snapshot, single active session, resume, skip/end early, one-question optional rating, duplicate-write protection. | Not started |
-| 6 | Build History screen | Sessions, counts, version-aware ratings and setup; create next deck and explicitly repeat drills. | Not started |
-| 7 | Implement invite-only authentication | Account/token/session migrations, email adapter and operator CLI, invitation/login/confirmation UI, single-use redemption, session/logout/CSRF contracts, throttling and revocation. | Not started |
-| 8 | Implement snapshot sharing | Authenticated publishing, public GET contract, account-scoped retry idempotency, validation/quotas, link preview and atomic local save. | Not started |
-| 9 | Complete PWA and recovery | Installable manifest, shell/library caching, readiness/update states, offline flows, backup/restore UI; no auth caching or credentials in exports. | Not started |
+| 3 | Prepare provisional starter content | Structure the three designated starter cards with durations/tags/instructions. Validate schemas and absence of internal provenance. Full card review and content expansion follow implementation. | Complete |
+| 4 | Build Deck screen and generation | Optional inputs/defaults, three-state equipment, multi-focus filtering, budget selection, manual selection/swap/reorder, custom drill creation/copy/edit. | Complete |
+| 5 | Build Practice screen | Session snapshot, single active session, resume, skip/end early, one-question optional rating, duplicate-write protection. | Complete |
+| 6 | Build History screen | Sessions, counts, version-aware ratings and setup; create next deck and explicitly repeat drills. | Complete |
+| 7 | Implement invite-only authentication | Account/token/session migrations, email adapter and operator CLI, invitation/login/confirmation UI, single-use redemption, session/logout/CSRF contracts, throttling and revocation. | Complete |
+| 8 | Implement snapshot sharing | Authenticated publishing, public GET contract, account-scoped retry idempotency, validation/quotas, link preview and atomic local save. | In progress |
+| 9 | Complete PWA and recovery | Installable manifest, shell/library caching, readiness/update states, offline flows, backup/restore UI; no auth caching or credentials in exports. | In progress |
 | 10 | Deploy and validate | Fly volume/single-Machine configuration, email sender/provider setup, backup/restore check, focused integration and device acceptance tests. | Not started |
 | 11 | Full card review and polish | After V1 implementation, review all 24 drafted cards with the architect in batches. Polish starter cards, resolve setup/technique gaps, confirm labels and durations, and expand the library. Revisit both deferred double-blip cards using the saved video reference. Track approval per card before adding reviewed content. | Not started |
 

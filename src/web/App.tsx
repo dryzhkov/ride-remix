@@ -5,6 +5,9 @@ import { AuthScreen } from './auth/AuthScreen';
 import { DeckScreen } from './deck/DeckScreen';
 import { PracticeScreen } from './practice/PracticeScreen';
 import { HistoryScreen } from './history/HistoryScreen';
+import { SharedDeckScreen } from './sharing/SharedDeckScreen';
+import { RecoveryScreen } from './recovery/RecoveryScreen';
+import { PwaStatus } from './pwa/PwaStatus';
 
 const screens = ['Deck', 'Practice', 'History'] as const;
 type Screen = (typeof screens)[number];
@@ -14,12 +17,14 @@ export function App() {
   return <PracticeApp />;
 }
 
-function Header() {
-  return <header><a className="brand" href="/">Ride Remix</a><a className="account-link" href="/auth/login">Account</a></header>;
+function Header({ onRecovery }: { onRecovery?: () => void }) {
+  return <header><a className="brand" href="/">Ride Remix</a><a className="account-link" href="/auth/login">Account</a>{onRecovery && <button type="button" onClick={onRecovery}>Backup and recovery</button>}</header>;
 }
 
 function PracticeApp() {
-  const [screen, setScreen] = useState<Screen>('Deck');
+  const [screen, setScreen] = useState<Screen | 'Recovery'>('Deck');
+  const [sharedId, setSharedId] = useState(() => location.pathname.match(/^\/s\/([^/]+)\/?$/)?.[1]);
+  const [contentVersion, setContentVersion] = useState(0);
   const [repository, setRepository] = useState<PracticeRepository>();
   const [selectedDeckId, setSelectedDeckId] = useState<string>();
   const [error, setError] = useState('');
@@ -38,7 +43,7 @@ function PracticeApp() {
         const sessions = await connection.listSessions();
         if (cancelled) return;
         setRepository(connection);
-        if (sessions.some(session => session.status === 'active')) setScreen('Practice');
+        if (!location.pathname.startsWith('/s/') && sessions.some(session => session.status === 'active')) setScreen('Practice');
         setError('');
         setLoading(false);
       } catch {
@@ -75,20 +80,30 @@ function PracticeApp() {
     }
   }
 
+  function navigate(next: Screen | 'Recovery') {
+    if (sharedId) { window.history.replaceState(null, '', '/'); setSharedId(undefined); }
+    setError('');
+    setScreen(next);
+  }
+
   return <div className="app">
-    <Header />
+    <Header onRecovery={() => navigate('Recovery')} />
     <main id="main-content">
       {error && <div role="alert"><p>{error}</p>{!repository && <button type="button" onClick={() => { setLoading(true); setRetry(value => value + 1); }}>Try again</button>}</div>}
       {loading && <p role="status">Loading saved practice…</p>}
       {repository && <fieldset className="app-screen" disabled={starting}>
-        {screen === 'Deck' && <DeckScreen repository={repository} selectedDeckId={selectedDeckId} onStartPractice={id => void startPractice(id)} />}
-        {screen === 'Practice' && <PracticeScreen repository={repository} onViewHistory={() => setScreen('History')} />}
-        {screen === 'History' && <HistoryScreen repository={repository} onStartPractice={id => void startPractice(id)} onEditDeck={id => { setSelectedDeckId(id); setScreen('Deck'); }} />}
+        {sharedId ? <SharedDeckScreen repository={repository} publicId={sharedId} onSaved={id => { setSelectedDeckId(id); navigate('Deck'); }} /> : <>
+        {screen === 'Deck' && <DeckScreen key={contentVersion} repository={repository} selectedDeckId={selectedDeckId} onStartPractice={id => void startPractice(id)} />}
+        {screen === 'Practice' && <PracticeScreen key={contentVersion} repository={repository} onViewHistory={() => setScreen('History')} />}
+        {screen === 'History' && <HistoryScreen key={contentVersion} repository={repository} onStartPractice={id => void startPractice(id)} onEditDeck={id => { setSelectedDeckId(id); setScreen('Deck'); }} />}
+        {screen === 'Recovery' && <RecoveryScreen repository={repository} onImported={() => { setContentVersion(value => value + 1); setSelectedDeckId(undefined); }} />}
+        </>}
       </fieldset>}
       {starting && <p role="status">Starting practice…</p>}
     </main>
+    {repository && <PwaStatus repository={repository} />}
     <nav aria-label="Main navigation">
-      {screens.map(name => <button key={name} type="button" disabled={starting} aria-current={screen === name ? 'page' : undefined} onClick={() => { setError(''); setScreen(name); }}>{name}</button>)}
+      {screens.map(name => <button key={name} type="button" disabled={starting} aria-current={screen === name ? 'page' : undefined} onClick={() => navigate(name)}>{name}</button>)}
     </nav>
   </div>;
 }

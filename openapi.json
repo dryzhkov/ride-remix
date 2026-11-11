@@ -3,7 +3,7 @@
   "info": {
     "title": "Ride Remix API",
     "version": "1.0.0",
-    "description": "Health and invite-only authentication are implemented. All auth responses use Cache-Control: no-store. Protected writes require same-origin Origin and X-CSRF-Token. Login links carry secrets in fragments; GET never consumes them."
+    "description": "Health, invite-only authentication, and immutable snapshot sharing are implemented. All auth responses use Cache-Control: no-store. Protected writes require same-origin Origin and X-CSRF-Token. Login links carry secrets in fragments; GET never consumes them."
   },
   "paths": {
     "/healthz": {
@@ -233,6 +233,174 @@
           },
           "403": {
             "description": "Revoked access or invalid origin/CSRF token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shared-decks": {
+      "post": {
+        "operationId": "publishSharedDeck",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "Must match configured public application origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Immutable publication; identical account/request/payload retries return the original result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationResponse"
+                },
+                "example": {
+                  "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "url": "https://ride.example.com/s/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "createdAt": "2026-11-10T00:00:00.000Z",
+                  "payloadVersion": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or expired session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Revoked access or invalid origin/CSRF token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Same account/request ID already has a different payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 131072 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unsupported payload version, invalid content, or deck bounds exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Account/IP rate or publication storage quota reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shared-decks/{id}": {
+      "get": {
+        "operationId": "getSharedDeck",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{32}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public immutable snapshot without publisher identity/history; no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedDeckResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Missing or operator-deleted publication",
             "content": {
               "application/json": {
                 "schema": {
@@ -486,6 +654,621 @@
           "expiresAt"
         ],
         "additionalProperties": false
+      },
+      "PublishRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "payloadVersion": {
+            "type": "number",
+            "const": 1
+          },
+          "deck": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 1
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "generationInputs": {
+                "type": "object",
+                "properties": {
+                  "timeBudgetMinutes": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1440
+                  },
+                  "focuses": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "balance",
+                        "clutch-throttle",
+                        "body-positioning",
+                        "obstacle-crossing"
+                      ]
+                    }
+                  },
+                  "equipment": {
+                    "type": "object",
+                    "properties": {
+                      "cones": {
+                        "type": "string",
+                        "enum": [
+                          "available",
+                          "unavailable",
+                          "unspecified"
+                        ]
+                      },
+                      "obstacle": {
+                        "type": "string",
+                        "enum": [
+                          "available",
+                          "unavailable",
+                          "unspecified"
+                        ]
+                      },
+                      "incline": {
+                        "type": "string",
+                        "enum": [
+                          "available",
+                          "unavailable",
+                          "unspecified"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "cones",
+                      "obstacle",
+                      "incline"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "timeBudgetMinutes",
+                  "focuses",
+                  "equipment"
+                ],
+                "additionalProperties": false
+              },
+              "entries": {
+                "minItems": 1,
+                "maxItems": 30,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "drill": {
+                      "type": "object",
+                      "properties": {
+                        "schemaVersion": {
+                          "type": "number",
+                          "const": 1
+                        },
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "revisionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "origin": {
+                          "type": "string",
+                          "enum": [
+                            "built-in",
+                            "custom"
+                          ]
+                        },
+                        "derivedFrom": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revisionId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "revisionId"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "cue": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "instructions": {
+                          "minItems": 1,
+                          "maxItems": 30,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 4000
+                          }
+                        },
+                        "setupDetails": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1000
+                          }
+                        },
+                        "focusTags": {
+                          "minItems": 1,
+                          "maxItems": 4,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "balance",
+                              "clutch-throttle",
+                              "body-positioning",
+                              "obstacle-crossing"
+                            ]
+                          }
+                        },
+                        "requiredEquipment": {
+                          "maxItems": 3,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "cones",
+                              "obstacle",
+                              "incline"
+                            ]
+                          }
+                        },
+                        "terrainRequirements": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1000
+                          }
+                        },
+                        "automaticGeneration": {
+                          "type": "boolean"
+                        },
+                        "suggestedDurationMinutes": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 1440
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "schemaVersion",
+                        "id",
+                        "revisionId",
+                        "origin",
+                        "title",
+                        "cue",
+                        "instructions",
+                        "setupDetails",
+                        "focusTags",
+                        "requiredEquipment",
+                        "terrainRequirements",
+                        "automaticGeneration",
+                        "suggestedDurationMinutes",
+                        "createdAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "plannedDurationMinutes": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 1440
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "drill",
+                    "plannedDurationMinutes"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "id",
+              "title",
+              "generationInputs",
+              "entries",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "requestId",
+          "payloadVersion",
+          "deck"
+        ],
+        "additionalProperties": false
+      },
+      "PublicationResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{32}$"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "payloadVersion": {
+            "type": "number",
+            "const": 1
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "createdAt",
+          "payloadVersion"
+        ],
+        "additionalProperties": false
+      },
+      "SharedDeckResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{32}$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "payloadVersion": {
+            "type": "number",
+            "const": 1
+          },
+          "deck": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 1
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "generationInputs": {
+                "type": "object",
+                "properties": {
+                  "timeBudgetMinutes": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1440
+                  },
+                  "focuses": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "balance",
+                        "clutch-throttle",
+                        "body-positioning",
+                        "obstacle-crossing"
+                      ]
+                    }
+                  },
+                  "equipment": {
+                    "type": "object",
+                    "properties": {
+                      "cones": {
+                        "type": "string",
+                        "enum": [
+                          "available",
+                          "unavailable",
+                          "unspecified"
+                        ]
+                      },
+                      "obstacle": {
+                        "type": "string",
+                        "enum": [
+                          "available",
+                          "unavailable",
+                          "unspecified"
+                        ]
+                      },
+                      "incline": {
+                        "type": "string",
+                        "enum": [
+                          "available",
+                          "unavailable",
+                          "unspecified"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "cones",
+                      "obstacle",
+                      "incline"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "timeBudgetMinutes",
+                  "focuses",
+                  "equipment"
+                ],
+                "additionalProperties": false
+              },
+              "entries": {
+                "minItems": 1,
+                "maxItems": 30,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "drill": {
+                      "type": "object",
+                      "properties": {
+                        "schemaVersion": {
+                          "type": "number",
+                          "const": 1
+                        },
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "revisionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "origin": {
+                          "type": "string",
+                          "enum": [
+                            "built-in",
+                            "custom"
+                          ]
+                        },
+                        "derivedFrom": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "revisionId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "revisionId"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "cue": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "instructions": {
+                          "minItems": 1,
+                          "maxItems": 30,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 4000
+                          }
+                        },
+                        "setupDetails": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1000
+                          }
+                        },
+                        "focusTags": {
+                          "minItems": 1,
+                          "maxItems": 4,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "balance",
+                              "clutch-throttle",
+                              "body-positioning",
+                              "obstacle-crossing"
+                            ]
+                          }
+                        },
+                        "requiredEquipment": {
+                          "maxItems": 3,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "cones",
+                              "obstacle",
+                              "incline"
+                            ]
+                          }
+                        },
+                        "terrainRequirements": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1000
+                          }
+                        },
+                        "automaticGeneration": {
+                          "type": "boolean"
+                        },
+                        "suggestedDurationMinutes": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 1440
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "schemaVersion",
+                        "id",
+                        "revisionId",
+                        "origin",
+                        "title",
+                        "cue",
+                        "instructions",
+                        "setupDetails",
+                        "focusTags",
+                        "requiredEquipment",
+                        "terrainRequirements",
+                        "automaticGeneration",
+                        "suggestedDurationMinutes",
+                        "createdAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "plannedDurationMinutes": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 1440
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "drill",
+                    "plannedDurationMinutes"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "id",
+              "title",
+              "generationInputs",
+              "entries",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "payloadVersion",
+          "deck"
+        ],
+        "additionalProperties": false
       }
     },
     "securitySchemes": {
@@ -497,20 +1280,5 @@
       }
     }
   },
-  "x-planned-operations": [
-    {
-      "method": "POST",
-      "path": "/api/v1/shared-decks",
-      "task": 8,
-      "authentication": "session cookie and CSRF",
-      "description": "Publish an immutable deck snapshot. Account-scoped idempotency."
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/shared-decks/{id}",
-      "task": 8,
-      "authentication": "public",
-      "description": "Retrieve a published snapshot by public link ID."
-    }
-  ]
+  "x-planned-operations": []
 }

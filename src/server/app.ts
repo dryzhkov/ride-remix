@@ -7,12 +7,15 @@ import { apiPrefix, healthResponseSchema } from '../contracts/index';
 import type { ApiError } from '../contracts/index';
 import type { AuthService } from './auth/service';
 import { registerAuthRoutes } from './auth/routes';
+import { registerSharingRoutes } from './sharing/routes';
+import type { SharingOptions } from './sharing/routes';
 
-export async function createApp(webRoot = resolve('dist/web'), auth?: AuthService, logger = true) {
+export async function createApp(webRoot = resolve('dist/web'), auth?: AuthService, logger = true, sharingOptions?: SharingOptions) {
   const app = Fastify({ logger, logController: new LogController({ disableRequestLogging: true }), bodyLimit: 65536 });
 
   app.addHook('onRequest', async (request, reply) => {
     const path = request.url.split('?')[0];
+    if (path.startsWith('/api/')) reply.header('Cache-Control', 'no-store');
     if (path.startsWith('/api/v1/auth') || path.startsWith('/auth/')) {
       reply.header('Cache-Control', 'no-store');
       reply.header('Referrer-Policy', 'no-referrer');
@@ -22,6 +25,7 @@ export async function createApp(webRoot = resolve('dist/web'), auth?: AuthServic
   });
   if (auth) {
     await registerAuthRoutes(app, auth);
+    await registerSharingRoutes(app, auth, sharingOptions);
     auth.startDeliveries(() => app.log.warn('Login email delivery failed'));
     app.addHook('onClose', async () => { await auth.close(); });
   }

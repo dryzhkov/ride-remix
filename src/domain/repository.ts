@@ -8,6 +8,7 @@ export interface ImportReport {
 export interface PracticeRepository {
   saveRevision(revision: DrillRevision): Promise<void>;
   saveDeck(deck: Deck): Promise<void>;
+  saveSharedDeck(deck: Deck, publicId: string): Promise<Deck>;
   listRevisions(): Promise<DrillRevision[]>;
   listDecks(): Promise<Deck[]>;
   listSessions(): Promise<Session[]>;

@@ -86,6 +86,32 @@ class IndexedDBRepository implements PracticeRepository {
       if (index < 0) s.decks.push(deck); else s.decks[index] = deck;
     });
   }
+  async saveSharedDeck(input: Deck, publicId: string): Promise<Deck> {
+    const snapshot = deckSchema.parse(input);
+    if (!/^[A-Za-z0-9_-]{32}$/.test(publicId)) throw new Error('Invalid shared deck ID');
+    // A stable recipient copy ID deduplicates repeated saves without exporting retry metadata.
+    const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`ride-remix:shared-copy:${publicId}`)));
+    digest[6] = (digest[6] & 15) | 128; // UUID v8: application-defined content-derived identifier.
+    digest[8] = (digest[8] & 63) | 128;
+    const hex = [...digest.slice(0, 16)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    const copyId = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    return this.mutate(state => {
+      const previous = state.decks.find(deck => deck.id === copyId);
+      if (previous) return previous; // Preserve recipient edits on repeated saves.
+      const now = new Date().toISOString();
+      const copy = deckSchema.parse({ ...snapshot, id: copyId, createdAt: now, updatedAt: now,
+        entries: snapshot.entries.map(entry => {
+          let drill = structuredClone(entry.drill);
+          const existing = state.revisions.find(r => r.revisionId === drill.revisionId);
+          if (existing && !same(existing, drill)) drill = { ...drill, revisionId: crypto.randomUUID() };
+          addRevision(state, drill);
+          return { ...entry, id: crypto.randomUUID(), drill };
+        }),
+      });
+      state.decks.push(copy);
+      return copy;
+    });
+  }
   async startSession(deckId: string) {
     return this.mutate(s => {
       if (s.sessions.some(s => s.status === 'active')) throw new Error('Resume or end the active session first');
