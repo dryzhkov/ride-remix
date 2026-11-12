@@ -19,13 +19,20 @@ test('access request UI requires verification and submits the action-bound token
     remove() {},
   };
   let submitted: unknown;
+  let accessSubmissions = 0;
+  let loginSubmissions = 0;
   const globals = {
     window: dom.window, document: dom.window.document, location: dom.window.location,
     HTMLElement: dom.window.HTMLElement, IS_REACT_ACT_ENVIRONMENT: true,
     fetch: async (url: unknown, init?: RequestInit) => {
       if (url === '/api/v1/auth/session') return Response.json({ error: { code: 'UNAUTHENTICATED', message: 'Sign in' } }, { status: 401 });
       if (url === '/api/v1/auth/challenge-config') return Response.json({ siteKey: 'public-key' });
+      if (url === '/api/v1/auth/login-links') {
+        loginSubmissions++;
+        return Response.json({ message: 'If this email is eligible, a sign-in link will arrive shortly.' }, { status: 202 });
+      }
       if (url === '/api/v1/auth/access-requests') {
+        accessSubmissions++;
         submitted = JSON.parse(String(init?.body));
         return Response.json(accessResponseSchema.parse({ message: 'Your request has been received. Access requires approval. If already approved, request a sign-in link.' }), { status: 202 });
       }
@@ -68,6 +75,13 @@ test('access request UI requires verification and submits the action-bound token
     await settle(() => submitted !== undefined);
     assert.deepEqual(submitted, { email: 'rider@example.com', challengeToken: 'verified-token' });
     assert.equal(submit.disabled, true);
+    await act(async () => {
+      complete!('fresh-token');
+      container.querySelector('form')!.dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+    });
+    assert.equal(submit.disabled, true);
+    assert.equal(accessSubmissions, 1);
+    assert.match(submit.textContent!, /Try again in/);
     assert.match(container.textContent!, /Access requires approval/);
     dom.window.history.replaceState(null, '', '/auth/login');
     await act(async () => { root.render(createElement(App, { key: 'login' })); });
@@ -75,6 +89,21 @@ test('access request UI requires verification and submits the action-bound token
     assert.equal(container.querySelector('h1')?.textContent, 'Sign in');
     assert.ok(container.querySelector('a[href="/invite"]'));
     assert.equal(container.querySelector('button[type=submit]')?.textContent, 'Email me a sign-in link');
+    await act(async () => {
+      complete!('login-token');
+    });
+    await act(async () => {
+      const form = container.querySelector('form')!;
+      form.dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+      form.dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+    });
+    await settle(() => loginSubmissions > 0);
+    await act(async () => {
+      complete!('another-token');
+      container.querySelector('form')!.dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+    });
+    assert.equal(loginSubmissions, 1);
+    assert.equal(container.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled, true);
   } finally {
     await act(async () => { root.unmount(); });
     dom.window.close();

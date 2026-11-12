@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getAuthSession, logout, redeemLoginLink, requestLoginLink, requestAccess } from '../api/auth';
 import { TurnstileChallenge } from './TurnstileChallenge';
 import type { AuthAccount } from '../../contracts/auth';
@@ -21,6 +21,14 @@ export function AuthScreen() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const actionLock = useRef(false);
+  const [cooldown, setCooldown] = useState(0);
+  const cooldownUntil = useRef(0);
+  useEffect(() => {
+    if (!cooldown) return;
+    const timer = setTimeout(() => setCooldown(Math.max(0, Math.ceil((cooldownUntil.current - Date.now()) / 1000))), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
   useEffect(() => {
     const abort = new AbortController();
     getAuthSession(abort.signal).then(session => {
@@ -29,10 +37,11 @@ export function AuthScreen() {
     return () => abort.abort();
   }, []);
   async function perform(action: () => Promise<void>) {
-    if (busy) return;
+    if (actionLock.current) return;
+    actionLock.current = true;
     setBusy(true); setError(''); setMessage('');
     try { await action(); } catch (error) { setError(error instanceof Error ? error.message : 'Sign-in is unavailable. Please try again.'); }
-    finally { setBusy(false); }
+    finally { actionLock.current = false; setBusy(false); }
   }
   return <main id="main-content" className="auth-screen">
     <h1>{confirmation && !confirmed ? 'Confirm sign-in' : account ? 'Your account' : accessRequest ? 'Request access' : 'Sign in'}</h1>
@@ -52,18 +61,20 @@ export function AuthScreen() {
       })}>Sign out</button>
     </> : <form onSubmit={event => {
       event.preventDefault();
-      if (!challengeToken) return;
+      if (!challengeToken || actionLock.current || cooldownUntil.current > Date.now()) return;
       void perform(async () => {
         try {
           const response = accessRequest ? await requestAccess(email, challengeToken) : await requestLoginLink(email, challengeToken);
           setMessage(response.message);
+          cooldownUntil.current = Date.now() + 60_000;
+          setCooldown(60);
         } finally { setChallengeToken(''); setChallengeAttempt(value => value + 1); }
       });
     }}>
       <label htmlFor="login-email">Email address</label>
       <input id="login-email" type="email" autoComplete="email" maxLength={254} required value={email} onChange={e => setEmail(e.target.value)} />
       <TurnstileChallenge key={`${accessRequest}-${challengeAttempt}`} action={accessRequest ? 'access_request' : 'login'} onToken={receiveToken} />
-      <button className="auth-action" type="submit" disabled={busy || !challengeToken}>{busy ? 'Submitting…' : accessRequest ? 'Submit access request' : 'Email me a sign-in link'}</button>
+      <button className="auth-action" type="submit" disabled={busy || cooldown > 0 || !challengeToken}>{cooldown > 0 ? `Try again in ${cooldown}s` : busy ? 'Submitting…' : accessRequest ? 'Submit access request' : 'Email me a sign-in link'}</button>
       <p>{accessRequest ? 'The beta is closed. Your email must be approved before you can sign in.' : 'Use an approved email address to sign in.'}</p>
       <p><a href={accessRequest ? '/auth/login' : '/invite'}>{accessRequest ? 'Already approved? Sign in' : 'Request beta access'}</a></p>
     </form>}
