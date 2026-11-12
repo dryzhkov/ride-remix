@@ -23,6 +23,112 @@
         }
       }
     },
+    "/api/v1/auth/challenge-config": {
+      "get": {
+        "operationId": "getChallengeConfig",
+        "responses": {
+          "200": {
+            "description": "Public Turnstile site key; null when verification is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/access-requests": {
+      "post": {
+        "operationId": "requestAccess",
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "Must match configured public application origin."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccessRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Generic receipt; pending email requires manual approval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Verification failed, expired, or already used",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds the endpoint’s configured body-size limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/login-links": {
       "post": {
         "operationId": "requestLoginLink",
@@ -63,7 +169,7 @@
             }
           },
           "400": {
-            "description": "Malformed JSON",
+            "description": "Verification failed, expired, or already used",
             "content": {
               "application/json": {
                 "schema": {
@@ -83,7 +189,7 @@
             }
           },
           "413": {
-            "description": "Body exceeds the endpoint’s 2048-byte limit",
+            "description": "Body exceeds the endpoint’s configured body-size limit",
             "content": {
               "application/json": {
                 "schema": {
@@ -180,7 +286,7 @@
             }
           },
           "413": {
-            "description": "Body exceeds the endpoint’s 2048-byte limit",
+            "description": "Body exceeds the endpoint’s configured body-size limit",
             "content": {
               "application/json": {
                 "schema": {
@@ -408,6 +514,16 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Public request rate reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
           }
         }
       }
@@ -466,7 +582,7 @@
             }
           },
           "413": {
-            "description": "Body exceeds the endpoint’s 2048-byte limit",
+            "description": "Body exceeds the endpoint’s configured body-size limit",
             "content": {
               "application/json": {
                 "schema": {
@@ -481,6 +597,63 @@
   },
   "components": {
     "schemas": {
+      "AccessRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "challengeToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "email",
+          "challengeToken"
+        ],
+        "additionalProperties": false
+      },
+      "AccessResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "const": "Your request has been received. Access requires approval. If already approved, request a sign-in link."
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "ChallengeConfig": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "siteKey": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "siteKey"
+        ],
+        "additionalProperties": false
+      },
       "HealthResponse": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -542,10 +715,16 @@
             "maxLength": 254,
             "format": "email",
             "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "challengeToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
           }
         },
         "required": [
-          "email"
+          "email",
+          "challengeToken"
         ],
         "additionalProperties": false
       },

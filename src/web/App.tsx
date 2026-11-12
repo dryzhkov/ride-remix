@@ -14,7 +14,7 @@ import { Icon } from './ui/Icon';
 
 const navigation = [ ['deck', 'Deck'], ['practice', 'Practice'], ['history', 'History'], ['settings', 'Settings'] ] as const;
 export function App() {
-  if (location.pathname.startsWith('/auth/')) return <div className="app"><Header /><AuthScreen /><nav className="bottom-nav" aria-label="Main navigation">{navigation.map(([page, label]) => <a key={page} href={`/${page}`}><Icon name={page} /><span>{label}</span></a>)}</nav></div>;
+  if (location.pathname.startsWith('/auth/') || /^\/invite\/?$/.test(location.pathname)) return <div className="app"><Header /><AuthScreen /><nav className="bottom-nav" aria-label="Main navigation">{navigation.map(([page, label]) => <a key={page} href={`/${page}`}><Icon name={page} /><span>{label}</span></a>)}</nav></div>;
   return <PracticeApp />;
 }
 function Header() {

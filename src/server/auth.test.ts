@@ -23,10 +23,10 @@ class Inbox implements LoginEmailSender {
 async function fixture(limits = defaultAuthLimits) {
   let now = Date.parse('2026-11-10T12:00:00Z');
   const store = new AuthStore(':memory:'); const inbox = new Inbox();
-  const service = new AuthService(store, inbox, origin, limits, () => now);
+  const service = new AuthService(store, inbox, origin, limits, () => now, { siteKey: 'test', verifier: { async verify() { return true; } } });
   const app = await createApp(undefined, service, false);
   const post = async (path: string, payload: Record<string, unknown> | undefined, headers = {}) => {
-    const response = await app.inject({ method: 'POST', url: `/api/v1/auth/${path}`, payload, headers: { origin, ...headers } });
+    const response = await app.inject({ method: 'POST', url: `/api/v1/auth/${path}`, payload: path === 'login-links' ? { challengeToken: crypto.randomUUID(), ...payload } : payload, headers: { origin, ...headers } });
     await service.waitForDeliveries();
     return response;
   };
@@ -135,7 +135,7 @@ test('email/IP/redemption rate limits and global delivery cap apply at boundarie
 test('payload limits, strict schemas, and schema fixtures', async t => {
   const f = await fixture(); t.after(() => f.app.close());
   assert.equal((await f.post('login-links', { email: 'rider@example.com', extra: true })).statusCode, 422);
-  assert.equal((await f.post('login-links', { email: 'x'.repeat(2100) })).statusCode, 413);
+  assert.equal((await f.post('login-links', { email: 'x'.repeat(5000) })).statusCode, 413);
   loginLinkRequestSchema.parse(authFixtures.loginRequest); loginLinkResponseSchema.parse(authFixtures.loginResponse); sessionResponseSchema.parse(authFixtures.session);
 });
 
@@ -145,7 +145,7 @@ test('SQLite migrations/reopen preserve accounts, token state, sessions, and rat
     const first = new AuthStore(path); first.invite('rider@example.com'); const token = first.issue('rider@example.com')!;
     const login = first.redeem(token)!; first.allow([{ key: 'bucket', limit: 1, window: 60_000 }]); first.close();
     const reopened = new AuthStore(path);
-    assert.equal(reopened.db.prepare('PRAGMA user_version').get()?.user_version, 2);
+    assert.equal(reopened.db.prepare('PRAGMA user_version').get()?.user_version, 3);
     assert.equal(reopened.session(login.secret).status, 'ok'); assert.equal(reopened.redeem(token), undefined);
     assert.equal(reopened.allow([{ key: 'bucket', limit: 1, window: 60_000 }]), false);
     reopened.close();
@@ -172,10 +172,10 @@ test('public login responses complete independently of provider latency and elig
   const blocked = new Promise<void>(resolve => { release = resolve; });
   let started!: () => void;
   const sending = new Promise<void>(resolve => { started = resolve; });
-  const service = new AuthService(store, { async sendLoginLink() { started(); await blocked; } }, origin);
+  const service = new AuthService(store, { async sendLoginLink() { started(); await blocked; } }, origin, undefined, undefined, { siteKey: 'test', verifier: { async verify() { return true; } } });
   const app = await createApp(undefined, service, false);
   t.after(async () => { release(); await app.close(); });
-  const request = (email: string) => app.inject({ method: 'POST', url: '/api/v1/auth/login-links', headers: { origin }, payload: { email } });
+  const request = (email: string) => app.inject({ method: 'POST', url: '/api/v1/auth/login-links', headers: { origin }, payload: { email, challengeToken: crypto.randomUUID() } });
   const eligible = await request('rider@example.com');
   assert.equal(eligible.statusCode, 202);
   await sending;
@@ -236,7 +236,7 @@ test('version 1 database migrates to the delivery queue without losing auth reco
   first.db.exec('DROP TABLE login_deliveries; PRAGMA user_version=1;');
   first.close();
   const migrated = new AuthStore(path);
-  assert.equal(migrated.db.prepare('PRAGMA user_version').get()?.user_version, 2);
+  assert.equal(migrated.db.prepare('PRAGMA user_version').get()?.user_version, 3);
   assert.equal(migrated.session(session.secret).status, 'ok');
   assert.equal(migrated.redeem(token), undefined);
   assert.equal(migrated.enqueueDelivery('rider@example.com'), true);

@@ -21,7 +21,7 @@ ESLint enforces dependency boundaries between the browser, server, domain, and c
 
 ## Container
 
-Run `docker build -t ride-remix .` and `docker run --rm -p 3000:3000 ride-remix`. The multi-stage image uses Node 24 and runs as an unprivileged user. `/healthz` reports process health. Unknown API routes return structured JSON errors. Browser navigation routes receive the application shell.
+Run `docker build -t ride-remix .` and `docker run --rm -p 3000:3000 --env-file .env.production -v ride-remix-data:/app/data ride-remix`. The multi-stage image uses Node 24 and runs as an unprivileged user. `/healthz` reports process health. Unknown API routes return structured JSON errors. Browser navigation routes receive the application shell.
 
 Fly configuration, persistent SQLite storage, and email delivery configuration are delivered with the corresponding implementation tasks.
 
@@ -36,3 +36,9 @@ Fly configuration, persistent SQLite storage, and email delivery configuration a
 Main navigation stays fixed with icon labels and safe-area spacing. Generation, library details, setup, and sharing use progressive disclosure to keep daily practice compact. Browser refresh/back/forward and saved data are covered by the app integration test.
 
 Task 10 validation also exercised headless Chrome at 320, 390, 820, and 1280px widths (no horizontal overflow; fixed navigation), plus production offline reloads of saved-deck, session, history, and settings routes. Physical iOS/Android acceptance remains part of release validation.
+
+## Closed-beta access and security
+
+Task 11 adds email access requests requiring manual approval, simple Turnstile verification on access/login requests, proxy-aware throttling and public-read limits, and application-wide security headers. Configure production Turnstile keys and the verified Fly proxy trust policy before starting the production image. Follow [SECURITY_OPERATIONS.md](./SECURITY_OPERATIONS.md) for setup, rate limits, SQL approval over Fly SSH, monitoring, and remaining release checks. The image ships `dist/server/auth/sql.js` for operator SQL access.
+
+Request beta access at `/invite`. Approved riders sign in at `/auth/login`.

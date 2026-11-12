@@ -52,7 +52,7 @@ test('worker precaches shell/library atomically and reports readiness only for c
 
 test('API, auth, cross-origin, non-GET and unknown assets bypass worker caches', async () => {
   const w = worker(); await w.seed(false); await w.dispatch('install');
-  for (const pathname of ['/api/v1/shared-decks/abc', '/api/v1/auth/session', '/auth/confirm?token=secret', '/healthz']) {
+  for (const pathname of ['/api/v1/shared-decks/abc', '/api/v1/auth/session', '/auth/confirm?token=secret', '/healthz', '/invite', '/invite/']) {
     assert.equal(await w.dispatch('fetch', { request: { url: `https://ride.test${pathname}`, method: 'GET', mode: 'navigate' === pathname ? 'navigate' : 'cors' } }), undefined);
   }
   assert.equal(await w.dispatch('fetch', { request: { url: 'https://ride.test/unlisted.png', method: 'GET' } }), 'network');

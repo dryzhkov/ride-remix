@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { loginLinkRequestSchema, loginLinkResponseSchema, redeemRequestSchema, redeemResponseSchema, sessionResponseSchema } from '../../contracts/auth';
+import { accessRequestSchema, accessResponseSchema, challengeConfigSchema, loginLinkRequestSchema, loginLinkResponseSchema, redeemRequestSchema, redeemResponseSchema, sessionResponseSchema } from '../../contracts/auth';
 import type { AuthService } from './service';
 import { SESSION_LIFETIME } from './store';
 
@@ -33,18 +33,29 @@ export function requireCsrf(expected: string, request: FastifyRequest, reply: Fa
   return true;
 }
 export async function registerAuthRoutes(app: FastifyInstance, auth: AuthService) {
-  app.post('/api/v1/auth/login-links', { bodyLimit: 2048 }, async (request, reply) => {
+  app.get('/api/v1/auth/challenge-config', async () => challengeConfigSchema.parse({ siteKey: auth.challenge?.siteKey ?? null }));
+  app.post('/api/v1/auth/access-requests', { bodyLimit: 4096 }, async (request, reply) => {
+    if (!requireSameOrigin(auth, request, reply)) return;
+    const input = accessRequestSchema.safeParse(request.body);
+    if (!input.success) return error(reply, 422, 'INVALID_REQUEST', 'Enter a valid email address and complete verification');
+    if (!auth.allowAccess(request.clientIp, input.data.email)) return error(reply, 429, 'RATE_LIMITED', 'Please try again later');
+    if (!await auth.verifyChallenge(input.data.challengeToken, 'access_request', request.clientIp)) return error(reply, 400, 'INVALID_CHALLENGE', 'Verification expired or failed. Please try again.');
+    if (!auth.store.requestAccess(input.data.email, auth.now())) auth.auditSecurity('pending_access_full');
+    return reply.code(202).send(accessResponseSchema.parse({ message: 'Your request has been received. Access requires approval. If already approved, request a sign-in link.' }));
+  });
+  app.post('/api/v1/auth/login-links', { bodyLimit: 4096 }, async (request, reply) => {
     if (!requireSameOrigin(auth, request, reply)) return;
     const input = loginLinkRequestSchema.safeParse(request.body);
     if (!input.success) return error(reply, 422, 'INVALID_EMAIL', 'Enter a valid email address');
-    if (!auth.allowLogin(request.ip, input.data.email)) return error(reply, 429, 'RATE_LIMITED', 'Please try again later');
+    if (!auth.allowLogin(request.clientIp, input.data.email)) return error(reply, 429, 'RATE_LIMITED', 'Please try again later');
     // Do not expose eligibility, global delivery quota, or provider failure to callers.
+    if (!await auth.verifyChallenge(input.data.challengeToken, 'login', request.clientIp)) return error(reply, 400, 'INVALID_CHALLENGE', 'Verification expired or failed. Please try again.');
     auth.queueLink(input.data.email);
     return reply.code(202).send(loginLinkResponseSchema.parse({ message: 'If this email is eligible, a sign-in link will arrive shortly.' }));
   });
   app.post('/api/v1/auth/redeem', { bodyLimit: 2048 }, async (request, reply) => {
     if (!requireSameOrigin(auth, request, reply)) return;
-    if (!auth.allowRedeem(request.ip)) return error(reply, 429, 'RATE_LIMITED', 'Please try again later');
+    if (!auth.allowRedeem(request.clientIp)) return error(reply, 429, 'RATE_LIMITED', 'Please try again later');
     const input = redeemRequestSchema.safeParse(request.body);
     const redemption = input.success ? auth.store.redeem(input.data.token, auth.now()) : undefined;
     if (!redemption) return error(reply, 400, 'INVALID_LOGIN_LINK', 'This link is invalid or expired. Request a new sign-in link.');

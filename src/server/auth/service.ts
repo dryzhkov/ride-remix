@@ -1,4 +1,5 @@
 import { AuthStore, LOGIN_LIFETIME } from './store';
+import type { ChallengeAction, ChallengeVerifier } from './challenge';
 import type { LoginEmailSender } from './email';
 
 export interface AuthLimits {
@@ -11,12 +12,18 @@ export class AuthService {
   private closing = false;
   private reportDeliveryFailure: () => void = () => {};
 
-  startDeliveries(reportFailure: () => void) {
+  private audit: (event: string) => void = () => {};
+  startDeliveries(reportFailure: () => void, audit: (event: string) => void = () => {}) {
+    this.audit = audit;
     this.reportDeliveryFailure = reportFailure;
     this.scheduleDeliveries();
   }
+  auditSecurity(event: string) { this.audit(event); }
   queueLink(email: string): void {
-    if (!this.closing && this.store.enqueueDelivery(email, this.now())) this.scheduleDeliveries();
+    if (!this.closing) {
+      if (this.store.enqueueDelivery(email, this.now())) this.scheduleDeliveries();
+      else this.audit('delivery_queue_full');
+    }
   }
   private scheduleDeliveries() {
     if (this.deliveryWork || this.closing) return;
@@ -42,10 +49,21 @@ export class AuthService {
     this.store.close();
   }
   constructor(readonly store: AuthStore, private sender: LoginEmailSender, origin: string,
-    readonly limits: AuthLimits = defaultAuthLimits, readonly now: () => number = Date.now) {
+    readonly limits: AuthLimits = defaultAuthLimits, readonly now: () => number = Date.now, readonly challenge?: { siteKey: string; verifier: ChallengeVerifier }) {
     const url = new URL(origin);
     if (url.origin !== origin || (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)))) throw new Error('PUBLIC_ORIGIN must be an HTTPS origin (localhost HTTP is permitted for development)');
     this.origin = url.origin;
+  }
+  async verifyChallenge(token: string, action: ChallengeAction, ip: string) {
+    if (!this.challenge || !await this.challenge.verifier.verify(token, action, ip, this.now())) return false;
+    return this.store.consumeChallenge(token, this.now());
+  }
+  allowAccess(ip: string, email: string) {
+    return this.store.allow([
+      { key: `access:ip:${ip}`, limit: 10, window: LOGIN_LIFETIME },
+      { key: `access:email:${email}`, limit: 3, window: LOGIN_LIFETIME },
+      { key: 'access:global', limit: 500, window: 60 * 60_000 },
+    ], this.now());
   }
   allowLogin(ip: string, email: string) {
     return this.store.allow([
@@ -59,8 +77,8 @@ export class AuthService {
   async sendLink(email: string): Promise<'sent' | 'ineligible' | 'limited' | 'failed'> {
     // Delivery happens outside public request handling. Unknown/revoked emails never spend delivery quota.
     const account = this.store.account(email);
-    if (!account || account.status === 'revoked') return 'ineligible';
-    if (!this.store.allow([{ key: 'email:global', limit: this.limits.emailPerDay, window: 24 * 60 * 60_000 }], this.now())) return 'limited';
+    if (!account || !['invited', 'active'].includes(account.status)) return 'ineligible';
+    if (!this.store.allow([{ key: 'email:global', limit: this.limits.emailPerDay, window: 24 * 60 * 60_000 }], this.now())) { this.audit('email_quota'); return 'limited'; }
     const token = this.store.issue(email, this.now());
     if (!token) return 'ineligible';
     try {

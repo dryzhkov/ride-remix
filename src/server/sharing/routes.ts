@@ -15,7 +15,7 @@ export async function registerSharingRoutes(app: FastifyInstance, auth: AuthServ
     if (!session || !requireCsrf(session.csrfToken, request, reply)) return;
     if (!auth.store.allow([
       { key: `publish:account:${session.account.id}`, limit: options.accountPerHour ?? 10, window: 60 * 60_000 },
-      { key: `publish:ip:${request.ip}`, limit: options.ipPerHour ?? 30, window: 60 * 60_000 },
+      { key: `publish:ip:${request.clientIp}`, limit: options.ipPerHour ?? 30, window: 60 * 60_000 },
     ], auth.now())) return reply.code(429).send({ error: { code: 'RATE_LIMITED', message: 'Publishing limit reached. Try again later.' } });
     const parsed = publishRequestSchema.safeParse(request.body);
     if (!parsed.success) return reply.code(422).send({ error: { code: 'INVALID_SNAPSHOT', message: 'This deck exceeds sharing limits or contains unsupported content.' } });

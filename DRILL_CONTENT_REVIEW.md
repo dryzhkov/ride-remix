@@ -64,7 +64,7 @@ The architect clarified that On / Off refers to throttle and Out / In refers to 
 
 ## Next review decisions
 
-Tracked follow-up: engineering task 11 resumes full card review and polish after V1 implementation, including the three provisional starter cards and remaining drafts.
+Tracked follow-up: engineering task 13 resumes full card review and polish after V1 implementation, including the three provisional starter cards and remaining drafts.
 
 Double-blip content is deferred. Retain the architect's [video reference starting at 11:00](https://www.youtube.com/watch?v=qhC5VH2_5QE&t=660s) for later review.
 
