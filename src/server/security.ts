@@ -3,18 +3,18 @@ import type { FastifyRequest } from 'fastify';
 
 declare module 'fastify' { interface FastifyRequest { clientIp: string; countedRequest: boolean } }
 export interface SecurityOptions {
-  proxyMode?: 'direct' | 'fly'; trustedProxyCidrs?: string[];
+  proxyMode?: 'direct' | 'fly'; trustedProxyCidrs?: string[]; flyIpv4Listener?: boolean;
   requestsPerMinute?: number; globalRequestsPerMinute?: number; maxConcurrent?: number;
 }
 export function securityFromEnvironment(): SecurityOptions {
   const mode = process.env.CLIENT_IP_MODE ?? (process.env.FLY_APP_NAME ? 'fly' : 'direct');
   if (mode !== 'direct' && mode !== 'fly') throw new Error('CLIENT_IP_MODE must be direct or fly');
-  return { proxyMode: mode, trustedProxyCidrs: (process.env.TRUSTED_PROXY_CIDRS ?? '').split(',').filter(Boolean) };
+  return { proxyMode: mode, flyIpv4Listener: mode === 'fly' && Boolean(process.env.FLY_APP_NAME), trustedProxyCidrs: (process.env.TRUSTED_PROXY_CIDRS ?? '').split(',').filter(Boolean) };
 }
 export function clientIpResolver(options: SecurityOptions) {
   const trusted = new BlockList();
   const cidrs = options.trustedProxyCidrs ?? [];
-  if (options.proxyMode === 'fly' && !cidrs.length) throw new Error('Fly client-IP mode requires TRUSTED_PROXY_CIDRS');
+  if (options.proxyMode === 'fly' && !cidrs.length && !options.flyIpv4Listener) throw new Error('Fly client-IP mode requires TRUSTED_PROXY_CIDRS');
   for (const cidr of cidrs) {
     const [address, prefix, extra] = cidr.trim().split('/');
     const family = isIP(address);
@@ -25,7 +25,9 @@ export function clientIpResolver(options: SecurityOptions) {
     const peer = request.raw.socket.remoteAddress ?? '';
     if (options.proxyMode !== 'fly') return peer;
     const family = isIP(peer);
-    if (!family || !trusted.check(peer, family === 4 ? 'ipv4' : 'ipv6')) return undefined;
+    // Fly Proxy connects over IPv4. Our 0.0.0.0 listener excludes direct IPv6 6PN traffic.
+    const validPeer = cidrs.length ? trusted.check(peer, family === 4 ? 'ipv4' : 'ipv6') : options.flyIpv4Listener && family === 4;
+    if (!family || !validPeer) return undefined;
     const value = request.headers['fly-client-ip'];
     // Ignore all X-Forwarded-* and CF-* values. Fly replaces this header at its edge.
     if (typeof value !== 'string' || !isIP(value)) return undefined;

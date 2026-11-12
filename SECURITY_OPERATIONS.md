@@ -14,7 +14,7 @@ Sources used for implementation are [Cloudflare validation](https://developers.c
 
 ## Request and approve access
 
-Visitors select Request beta access on the login page and submit an email after verification. Requests receive a generic receipt. Normalized addresses deduplicate. Repeated submissions preserve invited, active, and revoked states. A request creates a pending account and sends no email. Pending accounts cannot receive links, redeem existing tokens, or use existing sessions.
+Visitors open `/invite` from the login-page link and submit an email after verification. Requests receive a generic receipt. Normalized addresses deduplicate. Repeated submissions preserve invited, active, and revoked states. A request creates a pending account and sends no email. Pending accounts cannot receive links, redeem existing tokens, or use existing sessions.
 
 Pending records are capped at 1000. Records older than 30 days are removed when handling new access requests. Submission limits are 10 per IP and 3 per email per 15 minutes, plus 500 globally per hour. These limits apply before contacting Turnstile. Existing login quotas remain independent.
 
@@ -57,9 +57,9 @@ Approval data uses schema version 3. Startup migrates the account status CHECK c
 
 ## Fly client IP and traffic admission
 
-Use `CLIENT_IP_MODE=fly` and set `TRUSTED_PROXY_CIDRS` to the verified immediate Fly Proxy socket peer CIDRs for this app. Fly Machines default to fly mode when `FLY_APP_NAME` is set. Missing trusted CIDRs prevent startup. Values are comma-separated IPv4/IPv6 CIDRs. Confirm peers in a controlled deployment before setting narrow ranges. Do not use `0.0.0.0/0` or `::/0`.
+Use `CLIENT_IP_MODE=fly`. On Fly, `FLY_APP_NAME` enables the IPv4-listener policy. The server binds to `0.0.0.0`, Fly Proxy handles public HTTP/TLS, and direct IPv6 6PN access cannot reach the application listener. Accept a single valid `Fly-Client-IP` supplied by Fly Proxy and ignore `X-Forwarded-For` and `CF-Connecting-IP`. Keep this IPv4-only binding and HTTP service topology when relying on the policy. The local health endpoint requires no forwarding headers.
 
-Fly mode accepts `Fly-Client-IP` only from those peers, requires one valid IP, and ignores `X-Forwarded-For` and `CF-Connecting-IP`. Other peers are rejected. Keep direct public container access disabled and isolate the app from untrusted org/private-network workloads that could impersonate a trusted proxy. The process health endpoint works locally without proxy headers. Development and deployments without a proxy use `CLIENT_IP_MODE=direct`, which ignores every forwarding header.
+Fly Proxy socket ranges are not a stable published trust boundary. `TRUSTED_PROXY_CIDRS` remains an optional explicit override for controlled environments. Outside Fly, fly mode still requires explicit trusted peers. Development direct mode ignores forwarding headers.
 
 This policy assumes Fly Proxy is the public edge. Adding Cloudflare or another proxy in front requires a reviewed trust policy rather than blindly trusting its headers. Verify different external clients receive independent limits and that spoofed forwarded headers cannot bypass them. Fly documents the header contract and forwarding cautions here. [Fly request headers](https://fly.io/docs/networking/request-headers/)
 

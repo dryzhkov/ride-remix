@@ -1,0 +1,60 @@
+name: Deploy closed beta
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: fly-production
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: Build release container
+        run: docker build -t ride-remix:release .
+      - name: Smoke fresh mounted storage as unprivileged server
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker volume create ride-remix-smoke
+          trap 'docker rm -f ride-remix-smoke >/dev/null 2>&1 || true; docker volume rm ride-remix-smoke >/dev/null 2>&1 || true' EXIT
+          docker run -d --name ride-remix-smoke -p 3129:3000 -v ride-remix-smoke:/app/data \
+            -e PUBLIC_ORIGIN=https://smoke.example.com -e CLIENT_IP_MODE=direct \
+            -e TURNSTILE_SITE_KEY=smoke-site-key -e TURNSTILE_SECRET_KEY=smoke-secret-key \
+            ride-remix:release
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3129/healthz; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:3129/healthz
+          docker exec ride-remix-smoke sh -c 'test "$(stat -c %U /proc/1)" = node'
+          docker exec ride-remix-smoke node dist/server/backup.js backup /app/data/ride-remix.sqlite /app/data/smoke-backup.sqlite
+          docker exec ride-remix-smoke node dist/server/backup.js verify /app/data/smoke-backup.sqlite
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@98172f70657cb3e15db199af139be99bd3e61200
+        with:
+          version: 0.4.2
+      - name: Validate configuration and deploy one Machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          test -n "$FLY_API_TOKEN"
+          flyctl config validate --strict
+          flyctl deploy --remote-only --ha=false --strategy immediate
+          flyctl scale count 1 --yes
+          flyctl checks list
+          flyctl machine list

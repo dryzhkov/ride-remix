@@ -4,3 +4,9 @@ dist
 .env
 .env.*
 *.log
+
+data
+backups
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

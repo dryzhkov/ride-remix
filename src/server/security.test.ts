@@ -201,3 +201,15 @@ test('aborted uploads release concurrency admission without waiting for process 
     assert.equal((await app.inject({ url: '/missing' })).statusCode, 404);
   } finally { request.destroy(); }
 });
+
+
+test('Fly IPv4 listener policy rejects direct 6PN traffic and requires a valid edge header', async t => {
+  const app = await createApp(undefined, undefined, false, undefined, { proxyMode: 'fly', flyIpv4Listener: true, requestsPerMinute: 1 });
+  t.after(() => app.close());
+  const send = (remoteAddress: string, ip?: string) => app.inject({ url: '/missing', remoteAddress, headers: ip ? { 'fly-client-ip': ip, 'x-forwarded-for': 'spoofed' } : {} });
+  assert.equal((await send('172.19.0.1', '192.0.2.1')).statusCode, 404);
+  assert.equal((await send('172.19.0.1', '192.0.2.1')).statusCode, 429);
+  assert.equal((await send('172.19.0.2', '192.0.2.2')).statusCode, 404);
+  assert.equal((await send('fdaa::1', '192.0.2.3')).statusCode, 403);
+  assert.equal((await send('172.19.0.1')).statusCode, 403);
+});

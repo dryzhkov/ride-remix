@@ -1,6 +1,6 @@
 # Ride Remix
 
-A mobile-first motorcycle practice PWA. The scaffold provides the React application shell, Node server, runtime-validated shared HTTP contracts, and build/CI configuration.
+A mobile-first motorcycle practice PWA. React and IndexedDB power local practice, with a Node/SQLite service for invite-only login and shared snapshots.
 
 ## Development
 
@@ -17,13 +17,13 @@ Run `npm run check` for lint, local storage tests, strict TypeScript checks, and
 - `src/server` contains HTTP routes and will hold server persistence adapters.
 - `openapi.json` describes implemented HTTP contracts and marks the V1 routes reserved for subsequent tasks.
 
-ESLint enforces dependency boundaries between the browser, server, domain, and contracts. Domain/storage schemas and local persistence are implemented. Later tasks add authentication, sharing, offline caching, install icons, and feature screens. The web manifest establishes the PWA entry point. Offline readiness is delivered in task 9.
+ESLint enforces dependency boundaries between the browser, server, domain, and contracts. The app includes local practice/history, invite-only authentication, snapshot sharing, offline readiness, and backup/recovery.
 
 ## Container
 
-Run `docker build -t ride-remix .` and `docker run --rm -p 3000:3000 --env-file .env.production -v ride-remix-data:/app/data ride-remix`. The multi-stage image uses Node 24 and runs as an unprivileged user. `/healthz` reports process health. Unknown API routes return structured JSON errors. Browser navigation routes receive the application shell.
+Run `docker build -t ride-remix .` and `docker run --rm -p 3000:3000 --env-file .env.production -v ride-remix-data:/app/data ride-remix`. The multi-stage image uses Node 24. Its entrypoint initializes mounted storage permissions and then runs the server as the unprivileged node user. `/healthz` reports process health. Unknown API routes return structured JSON errors. Browser navigation routes receive the application shell.
 
-Fly configuration, persistent SQLite storage, and email delivery configuration are delivered with the corresponding implementation tasks.
+Fly configuration and the release/backup runbook are in [DEPLOYMENT.md](./DEPLOYMENT.md). Task 12 remains in progress until live deployment acceptance is recorded.
 
 ## App routes and mobile layout
 
@@ -42,3 +42,5 @@ Task 10 validation also exercised headless Chrome at 320, 390, 820, and 1280px w
 Task 11 adds email access requests requiring manual approval, simple Turnstile verification on access/login requests, proxy-aware throttling and public-read limits, and application-wide security headers. Configure production Turnstile keys and the verified Fly proxy trust policy before starting the production image. Follow [SECURITY_OPERATIONS.md](./SECURITY_OPERATIONS.md) for setup, rate limits, SQL approval over Fly SSH, monitoring, and remaining release checks. The image ships `dist/server/auth/sql.js` for operator SQL access.
 
 Request beta access at `/invite`. Approved riders sign in at `/auth/login`.
+
+Releases use the manual GitHub **Deploy closed beta** workflow after Fly bootstrap. Checks and a fresh-volume container smoke run before deployment. Configure the production environment's app-scoped `FLY_API_TOKEN` and follow [DEPLOYMENT.md](./DEPLOYMENT.md).

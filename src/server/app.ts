@@ -42,6 +42,17 @@ export async function createApp(webRoot = resolve('dist/web'), auth?: AuthServic
     if (reply.statusCode === 429) audit('rate_limited');
   });
 
+  // Static-file delivery can overwrite headers set before sendFile runs.
+  app.addHook('onSend', async (request, reply, payload) => {
+    const path = request.url.split('?')[0];
+    if (path.startsWith('/api/') || path.startsWith('/auth/') || /^\/invite\/?$/.test(path)) {
+      reply.header('Cache-Control', 'no-store');
+    } else if (path === '/sw.js' || String(reply.getHeader('Content-Type')).includes('text/html')) {
+      reply.header('Cache-Control', 'no-cache');
+    }
+    return payload;
+  });
+
   app.addHook('onRequest', async (request, reply) => {
     reply.header('Referrer-Policy', 'no-referrer');
     reply.header('X-Content-Type-Options', 'nosniff');
