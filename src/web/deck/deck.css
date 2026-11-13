@@ -53,16 +53,20 @@
 .saved-deck-card .deck-actions { display: grid; grid-template-columns: 1.3fr 1fr; }
 .saved-deck-card button { font-size: .8rem; }
 .deck-detail > p { margin: .4rem 0; }
-.deck-entries { list-style: none; padding: 0; display: grid; gap: .7rem; margin: 1rem 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
-.deck-entries > li { margin: 0; border-radius: 1rem; padding: 1rem; }
-.deck-entries > li > h3 { display: flex; align-items: center; gap: .5rem; }
-.entry-number { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: #e4ecd7; font-size: .75rem; flex-shrink: 0; }
-.deck-entries > li > p { font-size: .9rem; }
-.deck-entries label { display: flex; align-items: center; justify-content: space-between; gap: .8rem; font-size: .8rem; }
-.deck-entries label input { width: 5rem !important; }
-.deck-entries .deck-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; }
-.deck-entries .deck-actions button { font-size: .75rem; padding-inline: .4rem; }
-.deck-entries summary { font-size: .8rem; color: #4e6656; }
+/* Drill cards prioritize readable cues and separated, glove-sized controls. */
+.deck-entries { list-style: none; padding: 0; display: grid; gap: 1rem; margin: 1.25rem 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); }
+.deck-entries > li { display: flex; flex-direction: column; gap: 1rem; min-width: 0; margin: 0; border-radius: 1rem; padding: 1.25rem; }
+.deck-entries > li > h3 { display: flex; align-items: flex-start; gap: .75rem; margin: 0; font-size: 1.25rem; line-height: 1.35; overflow-wrap: anywhere; }
+.entry-number { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: #e4ecd7; font-size: 1rem; font-weight: 700; flex-shrink: 0; }
+.deck-entries > li > .drill-cue { margin: 0; font-size: 1.125rem; line-height: 1.6; }
+.deck-entries .drill-setup > summary { min-height: 3.5rem; padding: 1rem .25rem; font-size: 1rem; font-weight: 650; color: var(--ink); }
+.deck-entries .deck-requirements { padding: .25rem 0 .5rem; font-size: 1rem; line-height: 1.6; }
+.deck-entries .deck-requirements p + p { margin-top: .5rem; }
+.drill-card-actions { display: grid; gap: 1.25rem; margin-top: auto; padding-top: 1rem; }
+.drill-reorder { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.deck-entries .drill-card-actions button { min-height: 3.5rem; padding: .85rem 1rem; font-size: 1rem; font-weight: 600; touch-action: manipulation; }
+.deck-entries .drill-remove { justify-self: end; min-width: 8.5rem; color: #8b3928; border-color: #d3b2a7; background: #fffaf7; }
+.drill-card-actions > .drill-remove { margin-top: .25rem; }
 .deck-bottom-actions { display: flex; flex-wrap: wrap; align-items: start; gap: .7rem; }
 .deck-bottom-actions > .deck-primary { flex: 1; min-height: 3rem; }
 .deck-library { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }

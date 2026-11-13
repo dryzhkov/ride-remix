@@ -107,12 +107,14 @@ export function DeckScreen({ repository, onStartPractice, selectedDeckId, mode, 
       <div className="deck-bottom-actions"><button className="deck-primary" disabled={busy} onClick={() => onStartPractice(deck.id)}><Icon name="practice" />Start practice</button>
       <details className="deck-share"><summary>Share deck ↗</summary><ShareDeckButton repository={repository} deckId={deck.id} /></details></div>
       <ol className="deck-entries">{deck.entries.map((e, index) => <li key={e.id}>
-        <h3><span className="entry-number">{index + 1}</span>{e.drill.title}</h3><p>{e.drill.cue}</p><details><summary>Setup{e.drill.requiredEquipment.length ? ` · ${e.drill.requiredEquipment.join(', ')}` : ' · no equipment'}</summary><Requirements drill={e.drill} /></details>
-        <label>Planned minutes<input disabled={busy} aria-label={`Minutes for ${e.drill.title}`} type="number" min="1" step="1" value={e.plannedDurationMinutes} onChange={event => { const minutes = Number(event.target.value); if (Number.isInteger(minutes) && minutes > 0) changeDeck({ ...deck, entries: deck.entries.map(x => x.id === e.id ? { ...x, plannedDurationMinutes: minutes } : x) }); }} /></label>
-        <div className="deck-actions">
+        <h3><span className="entry-number">{index + 1}</span><span>{e.drill.title}</span></h3><p className="drill-cue">{e.drill.cue}</p><details className="drill-setup"><summary>Setup</summary><Requirements drill={e.drill} /></details>
+
+        <div className="drill-card-actions">
+          <div className="drill-reorder" role="group" aria-label={`Reorder ${e.drill.title}`}>
           <button disabled={busy || index === 0} aria-label={`Move ${e.drill.title} up`} onClick={() => { const entries = [...deck.entries]; [entries[index-1], entries[index]] = [entries[index], entries[index-1]]; changeDeck({ ...deck, entries }); }}>↑ Up</button>
           <button disabled={busy || index === deck.entries.length-1} aria-label={`Move ${e.drill.title} down`} onClick={() => { const entries = [...deck.entries]; [entries[index+1], entries[index]] = [entries[index], entries[index+1]]; changeDeck({ ...deck, entries }); }}>↓ Down</button>
-          <button disabled={busy || deck.entries.length === 1} onClick={() => changeDeck({ ...deck, entries: deck.entries.filter(x => x.id !== e.id) })}>Remove</button>
+          </div>
+          <button className="drill-remove" aria-label={`Remove ${e.drill.title}`} disabled={busy || deck.entries.length === 1} onClick={() => changeDeck({ ...deck, entries: deck.entries.filter(x => x.id !== e.id) })}>Remove</button>
         </div>
       </li>)}</ol>
       {deck.entries.length === 1 && <p>Keep at least one drill in a saved deck.</p>}
