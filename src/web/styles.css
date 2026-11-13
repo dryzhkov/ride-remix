@@ -5,6 +5,10 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  --action-primary: #194c38;
+  --action-primary-pressed: #123a2b;
+  --action-border: #809b8b;
+  --action-radius: .8rem;
   --ink: #173c35;
   --muted: #52685e;
   --line: #d6dfd4;
@@ -19,7 +23,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: default; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid #b55121; outline-offset: 3px; }
-button { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 2.75rem; border: 1px solid #9bafa0; border-radius: .75rem; padding: .65rem .9rem; background: var(--paper); }
+button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 3.5rem; border: 2px solid var(--action-border); border-radius: var(--action-radius); padding: .85rem 1rem; background: var(--paper); color: var(--ink); font-size: 1rem; font-weight: 650; line-height: 1.35; }
+button:disabled { opacity: .5; }
+button:not(:disabled):active { background: #e6edda; }
+.app :is(.deck-primary, .practice-primary, .history-action, .sharing-primary, .auth-action, .settings-action) { background: var(--action-primary); border: 2px solid var(--action-primary); color: #fff; }
+.app :is(.deck-primary, .practice-primary, .history-action, .sharing-primary, .auth-action, .settings-action):not(:disabled):active { background: var(--action-primary-pressed); border-color: var(--action-primary-pressed); }
 input:not([type=checkbox]):not([type=file]), select, textarea { width: 100%; min-height: 2.9rem; border: 1px solid #a4b7a9; border-radius: .65rem; padding: .65rem .85rem; background: white; }
 /* Reserve space around the arrow on every select, including third-party screen layouts. */
 .app select { appearance: none; -webkit-appearance: none; padding-inline: .9rem 2.8rem; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23173c35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right .8rem center; }
@@ -87,5 +95,6 @@ p { line-height: 1.5; }
 .settings-card p { color: #536453; line-height: 1.6; margin: .6rem 0 1rem; }
 .settings-card h3 { margin: 0 0 .6rem; font-size: 1rem; }
 .restore-backup { margin-top: 1.5rem; padding-top: 1.3rem; border-top: 1px solid var(--line); }
-.settings-card input::file-selector-button { font: inherit; border: 0; border-radius: .4rem; background: #e4eade; color: #163d36; padding: .6rem .8rem; margin-right: .7rem; cursor: pointer; }
-.settings-card button { cursor: pointer; }
+.settings-card input::file-selector-button { font: inherit; border: 0; border-radius: var(--action-radius); background: #e4eade; color: var(--ink); min-height: 3.5rem; padding: .85rem 1rem; margin-right: .7rem; cursor: pointer; }
+.settings-card button { max-width: 100%; }
+.settings-card button:disabled { cursor: default; }

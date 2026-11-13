@@ -16,7 +16,7 @@ export function RecoveryScreen({ repository, onImported }: { repository: Practic
   }
   return <div className="recovery-screen">
     <section className="settings-card"><h2>Protect browser storage</h2><p>Ask this browser to keep local data when storage is low. This does not protect against clearing data, losing the device, or uninstalling the browser.</p>
-    <button disabled={busy} onClick={() => void run(async () => {
+    <button className="settings-action" disabled={busy} onClick={() => void run(async () => {
       if (!navigator.storage?.persist) { setNotice('This browser cannot request persistent storage. Keep regular backups.'); return; }
       const persisted = await navigator.storage.persist();
       setNotice(persisted ? 'Persistent storage granted. Keep regular backups too.' : 'Persistent storage was not granted. Your data is still local; keep regular backups.');
@@ -25,7 +25,7 @@ export function RecoveryScreen({ repository, onImported }: { repository: Practic
     <section className="settings-card"><h2>Backup and Restore</h2>
     <p>Your decks and history stay in this browser and do not sync. Keep a backup before clearing data or changing devices.</p><details><summary>About your local data</summary><p>Browser storage eviction can erase local data. Signing in restores publishing access, not practice data. Backups contain your decks, custom drills, and history, without credentials or account details.</p></details>
     {action === 'backup' && <>{error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}</>}
-    <button disabled={busy} onClick={() => void run(async () => {
+    <button className="settings-action" disabled={busy} onClick={() => void run(async () => {
       const text = await exportBackup(repository); const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
       const link = document.createElement('a'); link.href = url; link.download = `ride-remix-backup-${new Date().toISOString().slice(0,10)}.json`;
       document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);

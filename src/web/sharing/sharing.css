@@ -1,8 +1,7 @@
 .sharing-publish { margin: 1.5rem 0; padding: 1.2rem; border: 1px solid #c2d0c2; border-radius: .75rem; background: #edf1e9; }
 .sharing-publish h3 { margin-top: 0; }
 .sharing-publish p, .shared-deck p { line-height: 1.65; }
-.sharing-publish button, .shared-deck button { min-height: 3rem; padding: .7rem 1rem; margin: .35rem .5rem .35rem 0; border: 1px solid #819c8c; border-radius: .5rem; color: #173c35; background: #fffefa; font: inherit; }
-.sharing-publish .sharing-primary, .shared-deck .sharing-primary { color: #fff; background: #163d36; border-color: #163d36; }
+.sharing-publish button, .shared-deck button { margin: .5rem .75rem .5rem 0; }
 .sharing-publish button:disabled, .shared-deck button:disabled { opacity: .6; cursor: wait; }
 .sharing-url { display: block; overflow-wrap: anywhere; font-weight: 650; padding: .75rem; background: #fffefa; border-radius: .4rem; user-select: all; }
 .sharing-publish [role=alert], .shared-deck [role=alert] { padding: .75rem; background: #fff0e8; color: #8b301b; border-radius: .4rem; }

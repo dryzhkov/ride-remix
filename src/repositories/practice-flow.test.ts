@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { getStarterLibrary } from '../content/starter-library';
 import { PracticeController } from '../domain/practice';
+import { archiveSchema, sessionEntries } from '../domain/schemas';
 import type { Deck } from '../domain/schemas';
 import { openPracticeRepository } from './indexed-db';
 
@@ -47,19 +48,81 @@ test('one rating tap saves v1 answer/setup and advances; rapid duplicate taps do
   assert.equal((await repository.listResults()).length, 1);
 });
 
-test('skip rating records done without answers; skip drill records skipped and completes session', async t => {
-  const { repository, controller } = await setup(); t.after(() => repository.close());
-  controller.openRating(); await controller.rate(); await controller.skip();
-  const results = await repository.listResults();
-  const entries = controller.getSnapshot().session!.deckSnapshot.entries;
-  const orderedResults = entries.map(entry => results.find(result => result.entryId === entry.id)!);
-  assert.deepEqual(orderedResults.map(r => [r.status, r.answers]), [['done', {}], ['skipped', {}]]);
+test('skip for now rotates the remaining queue without recording a result; the last drill stays available', async t => {
+  const { repository, controller, deck } = await setup(); t.after(() => repository.close());
+  await Promise.all([controller.skip(), controller.skip()]);
+  const deferred = controller.getSnapshot().session!;
+  assert.equal(deferred.currentEntry, 0);
+  assert.deepEqual(sessionEntries(deferred).map(e => e.id), deck.entries.map(e => e.id).reverse());
+  assert.deepEqual(deferred.deckSnapshot.entries, deck.entries);
+  assert.deepEqual((await repository.listDecks())[0].entries, deck.entries);
+  assert.equal((await repository.listResults()).length, 0);
+  controller.openRating(); await controller.rate();
+  assert.equal(controller.getSnapshot().session?.currentEntry, 1);
+  await controller.skip();
+  assert.equal(controller.getSnapshot().session?.status, 'active');
+  assert.equal(controller.getSnapshot().session?.currentEntry, 1);
+  controller.openRating(); await controller.rate('consistent');
   assert.equal(controller.getSnapshot().session?.status, 'completed');
   assert.ok(controller.getSnapshot().session?.endedAt);
-  controller.openRating(); await controller.skip(); await controller.endEarly();
-  assert.equal((await repository.listResults()).length, 2);
+  assert.deepEqual((await repository.listResults()).map(r => r.status), ['done', 'done']);
   const reopened = new PracticeController(repository); await reopened.load();
   assert.equal(reopened.getSnapshot().session, undefined);
+});
+
+test('deferred queue survives backup, restore and reload, with completed entries kept in order', async t => {
+  const { repository, controller } = await setup(); t.after(() => repository.close());
+  await controller.skip();
+  controller.openRating(); await controller.rate('consistent');
+  const before = controller.getSnapshot().session!;
+  const archive = await repository.exportArchive();
+  const restored = await openPracticeRepository(crypto.randomUUID()); t.after(() => restored.close());
+  await restored.importArchive(archive);
+  const fresh = new PracticeController(restored); await fresh.load();
+  assert.deepEqual(fresh.getSnapshot().session, before);
+  assert.equal((await restored.listResults()).length, 1);
+});
+
+test('deferral preserves completed prefix and concurrent retries cannot rotate the queue twice', async t => {
+  const repository = await openPracticeRepository(crypto.randomUUID()); t.after(() => repository.close());
+  const deck = makeDeck();
+  deck.entries = getStarterLibrary().drills.slice(0, 4).map(drill => ({ id: crypto.randomUUID(), drill, plannedDurationMinutes: 10 }));
+  await repository.saveDeck(deck);
+  const session = await repository.startSession(deck.id);
+  const controller = new PracticeController(repository); await controller.load();
+  controller.openRating(); await controller.rate('consistent');
+  const entryId = deck.entries[1].id;
+  await Promise.all([repository.deferEntry(session.id, entryId, 0), repository.deferEntry(session.id, entryId, 0)]);
+  const queued = (await repository.listSessions())[0];
+  assert.equal(queued.currentEntry, 1);
+  assert.equal(queued.queueVersion, 1);
+  assert.deepEqual(sessionEntries(queued).map(e => e.id), [deck.entries[0].id, deck.entries[2].id, deck.entries[3].id, entryId]);
+  const archive = await repository.exportArchive();
+  assert.ok(archiveSchema.safeParse(archive).success);
+  const bad = structuredClone(archive);
+  bad.sessions[0].entryOrder = [deck.entries[0].id, deck.entries[0].id];
+  assert.equal(archiveSchema.safeParse(bad).success, false);
+  bad.sessions[0].entryOrder = [crypto.randomUUID(), ...deck.entries.slice(1).map(e => e.id)];
+  assert.equal(archiveSchema.safeParse(bad).success, false);
+  await controller.load();
+  controller.openRating(); await controller.rate('finding');
+  assert.equal((await repository.listResults()).find(result => result.entryId === deck.entries[2].id)?.answers.feel, 'finding');
+  await controller.endEarly();
+  assert.equal((await repository.listResults()).length, 2);
+  assert.equal(controller.getSnapshot().session?.status, 'ended-early');
+});
+
+test('defer retry after a committed write does not rotate twice', async t => {
+  const { repository, controller } = await setup(); t.after(() => repository.close());
+  const original = repository.deferEntry.bind(repository);
+  repository.deferEntry = async (...args) => { await original(...args); throw new Error('Lost acknowledgement'); };
+  await controller.skip();
+  assert.equal(controller.getSnapshot().failedSave, true);
+  const persisted = (await repository.listSessions())[0];
+  repository.deferEntry = original;
+  await controller.retrySave();
+  assert.deepEqual(controller.getSnapshot().session, persisted);
+  assert.equal((await repository.listResults()).length, 0);
 });
 
 test('write failure preserves current question, blocks other actions, and retries exact result intent', async t => {
@@ -114,5 +177,6 @@ test('fresh controller resumes persisted position; load errors stay visible and 
   assert.equal(fresh.getSnapshot().session, undefined);
   repository.listSessions = original; await fresh.load();
   assert.equal(fresh.getSnapshot().error, undefined);
-  assert.equal(fresh.getSnapshot().session?.currentEntry, 1);
+  assert.equal(fresh.getSnapshot().session?.currentEntry, 0);
+  assert.equal(fresh.getSnapshot().session?.queueVersion, 1);
 });

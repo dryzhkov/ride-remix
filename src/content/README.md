@@ -1,6 +1,6 @@
 # Built-in drill library
 
-`starter-library.v1.json` uses schema version 1 and library version 2. Import `getStarterLibrary()` from `starter-library.ts` for a runtime-validated, independent copy. It contains all 24 cards approved in the content review, with 10-minute isolated skills and 15-minute combined techniques. The two double-blip cards remain deferred.
+`starter-library.v1.json` uses schema version 1 and library version 3. Import `getStarterLibrary()` from `starter-library.ts` for a runtime-validated, independent copy. It contains all 24 cards approved in the content review, with 10-minute isolated skills and 15-minute combined techniques. The two double-blip cards remain deferred.
 
 22 cards support automatic generation. Rut Control and Sidehill Control are manually selectable with explicit terrain requirements. Optional inclines do not count as required equipment. Obstacle Crossing is now covered by the library.
 
@@ -11,3 +11,5 @@ Keep review notes and original reference documents outside runtime assets. The a
 The renamed drill keeps Collection's logical ID, with a new revision ID and timestamp. Other existing revisions are unchanged. New built-in cards receive permanent logical and revision UUIDs.
 
 Task 4 consumes this module for deck generation; task 9 precaches the versioned library and controls when updates apply between sessions. This module does not install revisions into local storage or replace saved snapshots.
+
+Library version 3 applies the 2026-11-13 readability review for trained riders: separate practice steps, consistent terminology, clarified obstacle contact and clutch timing, alternating rectangle turns, and rut peg weighting. Changed cards have new revision IDs; saved snapshots retain their original content. Ready/acceleration/deceleration descriptions and the incline-transition wording remain as approved.

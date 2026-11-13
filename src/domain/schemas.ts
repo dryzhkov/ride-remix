@@ -40,8 +40,12 @@ export const deckSchema = z.strictObject({
 export const sessionSchema = z.strictObject({
   schemaVersion: z.literal(1), id: idSchema, deckId: idSchema, deckSnapshot: deckSchema,
   startedAt: timestamp, endedAt: timestamp.optional(),
+  entryOrder: z.array(idSchema).optional(), queueVersion: z.number().int().nonnegative().optional(),
   status: z.enum(['active', 'completed', 'ended-early']), currentEntry: z.number().int().nonnegative(),
 }).superRefine((s, ctx) => {
+  if (s.entryOrder && (s.entryOrder.length !== s.deckSnapshot.entries.length || new Set(s.entryOrder).size !== s.entryOrder.length || s.entryOrder.some(id => !s.deckSnapshot.entries.some(entry => entry.id === id)))) {
+    ctx.addIssue({ code: 'custom', message: 'Invalid session queue' });
+  }
   if (s.deckId !== s.deckSnapshot.id || s.currentEntry > s.deckSnapshot.entries.length ||
       (s.status === 'active' && (s.endedAt !== undefined || s.currentEntry === s.deckSnapshot.entries.length)) ||
       (s.status !== 'active' && !s.endedAt) ||
@@ -60,6 +64,12 @@ export type DrillRevision = z.infer<typeof drillRevisionSchema>;
 export type Deck = z.infer<typeof deckSchema>;
 export type Session = z.infer<typeof sessionSchema>;
 export type DrillResult = z.infer<typeof resultSchema>;
+
+/** Queue order is session-local; the saved deck snapshot remains immutable. */
+export function sessionEntries(session: Pick<Session, 'deckSnapshot' | 'entryOrder'>): Deck['entries'] {
+  const entries = session.deckSnapshot.entries;
+  return session.entryOrder ? session.entryOrder.flatMap(id => { const entry = entries.find(entry => entry.id === id); return entry ? [entry] : []; }) : entries;
+}
 
 export const archiveSchema = z.strictObject({
   archiveVersion: z.literal(1), exportedAt: timestamp,
@@ -83,7 +93,7 @@ export const archiveSchema = z.strictObject({
   }
   for (const s of a.sessions) {
     const results = a.results.filter(r => r.sessionId === s.id);
-    const expected = s.deckSnapshot.entries.slice(0, s.currentEntry);
+    const expected = sessionEntries(s).slice(0, s.currentEntry);
     if (results.length !== expected.length || expected.some(e => !results.some(r => r.entryId === e.id))) {
       ctx.addIssue({ code: 'custom', message: 'Session position does not match results' });
     }

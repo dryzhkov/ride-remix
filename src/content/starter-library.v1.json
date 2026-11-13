@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "libraryVersion": 2,
+  "libraryVersion": 3,
   "drills": [
     {
       "schemaVersion": 1,
@@ -58,10 +58,10 @@
     {
       "schemaVersion": 1,
       "id": "8200e165-97cd-4d53-90c9-98a3c8e459a4",
-      "revisionId": "59cadf43-b03d-4698-91d0-6bc07893b726",
+      "revisionId": "09ac2645-a303-4f77-bfd0-447a8fb50d93",
       "origin": "built-in",
       "title": "On / Off / Out / In Drill",
-      "cue": "Throttle on, throttle off, clutch out, clutch in. Keep the two actions separate.",
+      "cue": "Throttle on, throttle off, clutch out, clutch in. Keep throttle input separate from clutch release.",
       "instructions": [
         "Start with the clutch fully pulled in.",
         "Apply throttle, then close it.",
@@ -79,17 +79,20 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
       "id": "f06979bc-2e7d-4d64-9658-cf9d1fca2310",
-      "revisionId": "05ae3f50-5abe-4868-980a-b2dcfeb0c716",
+      "revisionId": "95aa683f-83f2-43dc-a4ad-50ba28334c77",
       "origin": "built-in",
       "title": "Static Balance",
       "cue": "Head over foot. Steer toward the fall.",
       "instructions": [
-        "Work on balance in both steering directions. Weight the outside peg and align your head over that foot. Steer toward the direction of the fall to correct your balance. Focus on front-brake control."
+        "Work on balance in both steering directions.",
+        "Weight the outside peg and align your head over that foot.",
+        "Steer toward the direction of the fall to correct your balance.",
+        "Focus on front-brake control."
       ],
       "setupDetails": [
         "Space to balance in place."
@@ -101,17 +104,18 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
       "id": "01315efd-d939-4dc7-92ef-fd6c3f76399b",
-      "revisionId": "2be9f532-cd45-473e-b49b-be79b358e187",
+      "revisionId": "5802c80e-00e3-45bc-ac71-fdbf7c8ca25e",
       "origin": "built-in",
       "title": "Incline Clutch Control",
-      "cue": "Steady engine note. Control movement with the friction zone.",
+      "cue": "Steady RPM. Control movement with the friction zone.",
       "instructions": [
-        "Use the clutch friction zone to control rolling up and down the incline. Keep the engine note steady as you adjust clutch engagement."
+        "Use the clutch friction zone to control rolling up and down the incline.",
+        "Keep the RPM steady as you adjust clutch engagement."
       ],
       "setupDetails": [
         "Incline."
@@ -125,17 +129,18 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
       "id": "b7b69011-2a51-44d8-b66f-a4e0de0716b4",
-      "revisionId": "ad9ef325-51bc-4dfd-923d-f07524cbaac0",
+      "revisionId": "16c339e2-1718-4e2a-b7c6-ecae6b637f94",
       "origin": "built-in",
       "title": "Rear Brake–Clutch Handoff",
       "cue": "Transfer the hold without moving.",
       "instructions": [
-        "At low RPM, practice transferring between holding the bike with the rear brake and holding it through the clutch friction zone. Keep the motorcycle stationary during each handoff."
+        "At low RPM, practice transferring between holding the bike with the rear brake and holding it through the clutch friction zone.",
+        "Keep the bike stationary during each handoff."
       ],
       "setupDetails": [
         "Incline. A small incline works."
@@ -149,17 +154,20 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
       "id": "31d1f788-e797-468a-a093-2318b8e13309",
-      "revisionId": "304a0669-31cc-441c-a06d-5dcec203f896",
+      "revisionId": "56c2cc85-9e1b-4efb-9900-3b15d8e3b30a",
       "origin": "built-in",
       "title": "Front Stuff Balance",
-      "cue": "Balance and clutch control at steady RPM.",
+      "cue": "Front tire against the obstacle. Maintain steady RPM.",
       "instructions": [
-        "Combine balance and clutch control at the obstacle while maintaining steady RPM. Practice seated, then standing, then progress to rolling in."
+        "Position the front tire against the obstacle.",
+        "Combine balance and clutch control while maintaining steady RPM.",
+        "Slip the clutch slightly to help press the front tire into the obstacle.",
+        "Practice seated, then standing, then progress to rolling in."
       ],
       "setupDetails": [
         "Sizable obstacle such as a rock or log, roughly over 1 ft tall."
@@ -174,17 +182,18 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
       "id": "090a18e8-1dce-4c07-8c19-87cd44dd9307",
-      "revisionId": "824b88fd-e172-416f-95f1-7ecc1d92d77f",
+      "revisionId": "22f64241-dd09-4489-92a4-fae4136a6d7f",
       "origin": "built-in",
       "title": "Outside-Peg Mount and Dismount",
       "cue": "Find balance before swinging your leg.",
       "instructions": [
-        "Find balance on the outside peg before swinging a leg over the motorcycle. Practice mounting and dismounting with attention to front-brake control and full steering lock."
+        "Find balance on the outside peg before swinging a leg over the bike.",
+        "Practice mounting and dismounting with attention to front-brake control and full steering lock."
       ],
       "setupDetails": [
         "Space beside the bike. Uphill variant optional."
@@ -197,17 +206,18 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
       "id": "ec553030-f769-467f-8ae0-57756f11137c",
-      "revisionId": "c60d9cfd-b4a3-4594-b9a0-e7156d8f8cbc",
+      "revisionId": "4fcbcec7-ec05-492b-b6f7-1ebb3571d307",
       "origin": "built-in",
       "title": "On-Command Balance",
       "cue": "Carry moving balance into a complete stop.",
       "instructions": [
-        "Begin with moving outside-peg balance. Come to a complete stop while preserving head-over-foot alignment and outside-peg weighting."
+        "Begin with moving outside-peg balance.",
+        "Come to a complete stop while preserving head-over-foot alignment and outside-peg weighting."
       ],
       "setupDetails": [
         "Open riding area."
@@ -220,17 +230,19 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
       "id": "e7c67a18-305e-413f-bd7b-46d8bc8d7d42",
-      "revisionId": "d9498ec2-feb7-4336-8e43-61379f57473e",
+      "revisionId": "b8fca829-ef04-4126-97fc-7697a89ea2a7",
       "origin": "built-in",
       "title": "Full-Lock Rectangle",
       "cue": "Outside peg and steady clutch control at full lock.",
       "instructions": [
-        "Practice full-lock turns in the rectangle, coordinating outside-peg weight, body position, and steady clutch control."
+        "Alternate full-lock turns within the rectangle.",
+        "Coordinate outside-peg weight, body position, and steady clutch control.",
+        "Aim to fit in as many turns as you can."
       ],
       "setupDetails": [
         "Cone rectangle with adjustable dimensions and spacing."
@@ -245,7 +257,7 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
@@ -272,12 +284,13 @@
     {
       "schemaVersion": 1,
       "id": "f5615f74-678d-42ba-b35c-3179bb7b13f5",
-      "revisionId": "01f89f2d-cebf-4c39-b906-59bce008bceb",
+      "revisionId": "9af23111-cf99-484f-b5d5-76c64891595f",
       "origin": "built-in",
       "title": "Loading the Flywheel",
       "cue": "Close the throttle before the incline transition.",
       "instructions": [
-        "Practice timing the falling engine RPM as you approach the incline transition. Close the throttle before the transition."
+        "Practice timing the falling engine RPM as you approach the incline transition.",
+        "Close the throttle before the transition."
       ],
       "setupDetails": [
         "Small incline."
@@ -291,7 +304,7 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
@@ -413,12 +426,13 @@
     {
       "schemaVersion": 1,
       "id": "debaf9ff-8f79-4d44-a8f7-981c2879eee3",
-      "revisionId": "f5cb73eb-ff76-4fc6-b33a-f6fbc3de3728",
+      "revisionId": "4693b613-d621-4b7d-a3ae-b069dfb90f31",
       "origin": "built-in",
       "title": "Incline Clutch-Up",
       "cue": "Weight shift, rebound, clutch timing, controlled return.",
       "instructions": [
-        "Coordinate weight shift, suspension rebound, and clutch timing to practice lifting the front wheel. Include control of the front wheel's return."
+        "Coordinate weight shift, suspension rebound, and clutch timing to practice lifting the front wheel.",
+        "Include control of the front wheel's return."
       ],
       "setupDetails": [
         "Incline."
@@ -434,7 +448,7 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 15,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
@@ -464,12 +478,14 @@
     {
       "schemaVersion": 1,
       "id": "84b1ffc1-4c2e-4ec5-970e-a98d5c543ce6",
-      "revisionId": "206788ec-2046-4ec2-9940-d3681dbf56e4",
+      "revisionId": "5495fa8c-4d4a-4862-b084-c019576e1a8a",
       "origin": "built-in",
       "title": "Full Clutch-Up",
-      "cue": "Combine the clutch-up components.",
+      "cue": "Move your body forward before delivering power.",
       "instructions": [
-        "Combine the earlier clutch-up rehearsals into the complete movement."
+        "Combine the clutch-up rehearsals into the complete movement.",
+        "Move your body forward before delivering power.",
+        "When practicing over an obstacle, pull the clutch in as soon as the rear tire contacts it."
       ],
       "setupDetails": [
         "Open riding area."
@@ -483,7 +499,7 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 15,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
@@ -514,12 +530,14 @@
     {
       "schemaVersion": 1,
       "id": "6c1e2f8c-3263-4a51-972a-decef926f113",
-      "revisionId": "fb5e81ce-c74b-4090-b6b8-a804955d9073",
+      "revisionId": "ff4417cc-a139-4310-b673-08e14d37cb15",
       "origin": "built-in",
       "title": "Unstuck Technique",
-      "cue": "Pay attention to clutch-release timing.",
+      "cue": "Body forward before power. Clutch in at rear-tire contact.",
       "instructions": [
-        "Rehearse the unstuck movement from this starting position. Watch for early clutch release."
+        "Start with the front tire on the obstacle.",
+        "Move your body forward before delivering power.",
+        "Pull the clutch in as soon as the rear tire contacts the obstacle."
       ],
       "setupDetails": [
         "Start with the front tire on an obstacle."
@@ -535,17 +553,18 @@
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 15,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
       "id": "ffb707f7-e976-4296-9b83-b790f1ca5b09",
-      "revisionId": "c4875d0f-3f48-4642-860a-4bf84c2a54b9",
+      "revisionId": "7a9eacac-d049-46a4-b0e2-8e3b7c0d2df2",
       "origin": "built-in",
       "title": "Rut Control",
-      "cue": "Downhill peg weight and rear-wheel traction.",
+      "cue": "Weight the peg that presses the tire into the rut.",
       "instructions": [
-        "Focus on downhill peg weighting and maintaining rear-wheel traction through throttle and clutch control."
+        "Weight the peg that presses the tire into the rut.",
+        "Maintain rear-wheel traction through throttle and clutch control."
       ],
       "setupDetails": [
         "Rut."
@@ -561,17 +580,18 @@
       ],
       "automaticGeneration": false,
       "suggestedDurationMinutes": 15,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     },
     {
       "schemaVersion": 1,
       "id": "d02ef165-75aa-47f8-b3fb-6344958ce789",
-      "revisionId": "40a82a8f-4586-4428-a6f9-1655047572a9",
+      "revisionId": "b06404d1-59fe-4d7e-8489-5ff6453ef1f7",
       "origin": "built-in",
       "title": "Sidehill Control",
       "cue": "Downhill peg weight and rear-wheel traction.",
       "instructions": [
-        "Apply the balance and traction control practiced in Rut Control to a sidehill. Focus on downhill peg weighting and throttle and clutch control."
+        "Apply the balance and traction control practiced in Rut Control to a sidehill.",
+        "Focus on downhill peg weighting and throttle and clutch control."
       ],
       "setupDetails": [
         "Sidehill."
@@ -587,7 +607,7 @@
       ],
       "automaticGeneration": false,
       "suggestedDurationMinutes": 15,
-      "createdAt": "2026-11-12T00:00:00Z"
+      "createdAt": "2026-11-13T00:00:00Z"
     }
   ]
 }

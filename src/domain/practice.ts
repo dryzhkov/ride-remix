@@ -1,5 +1,5 @@
 import type { PracticeRepository } from './repository';
-import { resultSchema } from './schemas';
+import { resultSchema, sessionEntries } from './schemas';
 import type { DrillResult, Session } from './schemas';
 
 export const feelOptions = [
@@ -16,7 +16,7 @@ export interface PracticeState {
   error?: string;
   failedSave: boolean;
 }
-type PendingWrite = { kind: 'result'; result: DrillResult } | { kind: 'end'; sessionId: string };
+type PendingWrite = { kind: 'result'; result: DrillResult } | { kind: 'end'; sessionId: string } | { kind: 'defer'; sessionId: string; entryId: string; queueVersion: number };
 
 /** Coordinates UI intent; only the repository may advance the persisted session. */
 export class PracticeController {
@@ -65,11 +65,15 @@ export class PracticeController {
   }
   async skip() {
     if (!this.actionable() || this.state.rating) return;
-    await this.record('skipped');
+    const session = this.state.session!;
+    const entries = sessionEntries(session);
+    if (session.currentEntry >= entries.length - 1) return;
+    this.pending = { kind: 'defer', sessionId: session.id, entryId: entries[session.currentEntry].id, queueVersion: session.queueVersion ?? 0 };
+    await this.persist();
   }
   private async record(status: 'done' | 'skipped', feel?: FeelAnswer) {
     const session = this.state.session!;
-    const entry = session.deckSnapshot.entries[session.currentEntry];
+    const entry = sessionEntries(session)[session.currentEntry];
     const result = resultSchema.parse({
       schemaVersion: 1, id: crypto.randomUUID(), sessionId: session.id, entryId: entry.id,
       status, completedAt: new Date().toISOString(), questionnaireVersion: 'v1',
@@ -93,7 +97,9 @@ export class PracticeController {
     try {
       const session = pending.kind === 'result'
         ? await this.repository.recordResult(pending.result)
-        : await this.repository.endSession(pending.sessionId);
+        : pending.kind === 'defer'
+          ? await this.repository.deferEntry(pending.sessionId, pending.entryId, pending.queueVersion)
+          : await this.repository.endSession(pending.sessionId);
       this.pending = undefined;
       this.publish({ session, saving: false, rating: false, error: undefined, failedSave: false });
     } catch {

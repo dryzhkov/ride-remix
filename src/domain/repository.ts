@@ -15,6 +15,7 @@ export interface PracticeRepository {
   listResults(): Promise<DrillResult[]>;
   startSession(deckId: string): Promise<Session>;
   recordResult(result: DrillResult): Promise<Session>;
+  deferEntry(sessionId: string, entryId: string, queueVersion: number): Promise<Session>;
   endSession(sessionId: string): Promise<Session>;
   exportArchive(): Promise<Archive>;
   importArchive(archive: unknown): Promise<ImportReport>;

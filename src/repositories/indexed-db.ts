@@ -1,5 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import { archiveSchema, deckSchema, drillRevisionSchema, resultSchema, sessionSchema } from '../domain/schemas';
+import { archiveSchema, sessionEntries, deckSchema, drillRevisionSchema, resultSchema, sessionSchema } from '../domain/schemas';
 import type { Archive, Deck, DrillRevision, DrillResult, Session } from '../domain/schemas';
 import type { ImportReport, PracticeRepository } from '../domain/repository';
 
@@ -131,12 +131,28 @@ class IndexedDBRepository implements PracticeRepository {
       const existing = s.results.find(r => r.sessionId === result.sessionId && r.entryId === result.entryId);
       if (existing) return session; // First tap wins, even if a retry allocated a different result ID.
       if (s.results.some(r => r.id === result.id)) throw new Error('Result ID already exists');
-      if (session.status !== 'active' || session.deckSnapshot.entries[session.currentEntry]?.id !== result.entryId) throw new Error('Entry is not current');
+      if (session.status !== 'active' || sessionEntries(session)[session.currentEntry]?.id !== result.entryId) throw new Error('Entry is not current');
       s.results.push(result);
       session.currentEntry++;
       if (session.currentEntry === session.deckSnapshot.entries.length) {
         session.status = 'completed'; session.endedAt = result.completedAt;
       }
+      return session;
+    });
+  }
+  async deferEntry(sessionId: string, entryId: string, queueVersion: number) {
+    return this.mutate(s => {
+      const session = s.sessions.find(session => session.id === sessionId);
+      if (!session) throw new Error('Session not found');
+      // Compare-and-set makes repeated taps and ambiguous-write retries harmless.
+      if (session.status !== 'active' || (session.queueVersion ?? 0) !== queueVersion) return session;
+      const entries = sessionEntries(session);
+      if (entries[session.currentEntry]?.id !== entryId) return session;
+      if (session.currentEntry >= entries.length - 1) return session;
+      const order = entries.map(entry => entry.id);
+      order.push(...order.splice(session.currentEntry, 1));
+      session.entryOrder = order;
+      session.queueVersion = queueVersion + 1;
       return session;
     });
   }

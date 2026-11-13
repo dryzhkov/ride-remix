@@ -7,7 +7,7 @@ import source from './starter-library.v1.json';
 test('starter asset validates with all 24 approved cards and stable UUID identities', () => {
   const library = librarySchema.parse(source);
   assert.equal(library.schemaVersion, 1);
-  assert.equal(library.libraryVersion, 2);
+  assert.equal(library.libraryVersion, 3);
   assert.deepEqual(library.drills.slice(0, 2).map(d => [d.title, d.id, d.revisionId]), [
     ['Cone Weave', '18be1346-455b-4ad9-8a2a-2d4b04734093', '39b47a0c-29a7-441f-9bc6-05dc51422e71'],
     ['Moving Outside-Peg Weight', '1f2bc57c-3a94-4866-9f90-149c772d9e02', '19c248f2-6503-4fc5-a43a-93504c127c13'],

@@ -7,7 +7,6 @@
 .history-selection { display: flex; align-items: center; gap: .75rem; min-height: 2.75rem; cursor: pointer; }
 .history-selection input { width: 1.25rem; height: 1.25rem; flex-shrink: 0; accent-color: #163d36; }
 .history-count { display: block; font-weight: 400; font-size: .9rem; margin-top: .25rem; }
-.history-action { min-height: 3rem; margin-top: .75rem; padding: .75rem 1rem; border: 0; border-radius: .5rem; background: #163d36; color: #fff; }
 .history-action:disabled { opacity: .55; cursor: default; }
 .history-screen summary { cursor: pointer; padding: .75rem 0; min-height: 2.75rem; }
 .history-screen summary:focus-visible, .history-screen input:focus-visible { outline: 3px solid #a84c1b; outline-offset: 3px; }
@@ -38,5 +37,6 @@
 .history-sessions .history-card > h3 a { text-decoration: none; }
 .history-sessions .history-card > h3 a:hover { text-decoration: underline; }
 .history-sessions .history-card > details { font-size: .85rem; }
-.history-action { min-height: 2.8rem; font-size: .85rem; border-radius: .65rem; }
 .history-drills .history-action { margin-bottom: .75rem; }
+
+.history-action { margin-top: .75rem; }

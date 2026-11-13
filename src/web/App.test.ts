@@ -104,6 +104,12 @@ test('application entry connects practice, sharing, recovery and production work
     await settle(() => !!container.querySelector('.practice-drill'));
     assert.equal((await repository.listSessions()).length, 1);
     const firstSessionId = (await repository.listSessions())[0].id;
+    const originalDrill = container.querySelector('.practice-drill h2')?.textContent;
+    await click('Skip for now');
+    await settle(() => container.querySelector('.practice-drill h2')?.textContent !== originalDrill);
+    assert.equal((await repository.listResults()).length, 0);
+    assert.ok([...container.querySelectorAll('button')].some(button => button.textContent === 'End session'));
+    const deferredDrill = container.querySelector('.practice-drill h2')?.textContent;
     assert.equal(dom.window.location.pathname, `/practice/${firstSessionId}`);
     // A remount simulates reloading the app with an unfinished persisted session.
     await act(async () => { root.unmount(); });
@@ -111,6 +117,7 @@ test('application entry connects practice, sharing, recovery and production work
     await act(async () => { root.render(createElement(App)); });
     await settle(() => !!container.querySelector('.practice-drill'));
     const drillCount = (await repository.listSessions())[0].deckSnapshot.entries.length;
+    assert.equal(container.querySelector('.practice-drill h2')?.textContent, deferredDrill);
     for (let entry = 0; entry < drillCount; entry++) {
       await click('Done');
       await click('Getting consistent');

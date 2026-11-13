@@ -19,7 +19,7 @@ Use client-generated UUIDs, UTC timestamps, explicit schema versions, and stable
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | DrillRevision | `id`, `revisionId`, `origin` (built-in/custom), optional `derivedFrom`, title, cue, instructions, setup details, focus tags, required equipment, suggested duration, timestamps. Published rider content excludes clinic provenance. |
 | Deck          | `id`, title, generation inputs, ordered entries, timestamps. Each entry references an embedded drill revision and planned duration. Each logical drill occurs at most once. Editable and reusable.                                   |
-| Session       | `id`, `deckId`, immutable deck snapshot, `startedAt`, `endedAt?`, status (active/completed/ended-early), current entry. At most one active session per device.                                                                       |
+| Session       | `id`, `deckId`, immutable deck snapshot, `startedAt`, `endedAt?`, status (active/completed/ended-early), current entry, optional session-local entry order and queue version. At most one active session per device.                                                                       |
 | DrillResult   | `id`, `sessionId`, entry ID, status (done/skipped), `completedAt`, questionnaire version, answers by question ID, setup snapshot. At most one result per session entry; no individual repetition counts or notes.                    |
 | Account       | Server-generated UUID, unique normalized email, status (pending/invited/active/revoked), timestamps. Stable identity across browsers/devices; no username or password.                                                               |
 | LoginToken    | Server: token hash, account ID, expiry, consumed timestamp. Random single-use secret; never store the raw token.                                                                                                                     |
@@ -67,7 +67,7 @@ Practice one drill freely, then select Done. Show one optional question: **How d
 | `repeatable`  | Repeatable today   |
 
 
-One tap records the answer and advances. Skip rating records completion without answers. Skipping the drill records a skipped result. Repetitions are not logged separately. Persist the current position and completion transactionally; duplicate taps must not create extra results. Ending early preserves completed results and leaves remaining entries unattempted.
+One tap records the answer and advances. Continue without rating records completion without answers. Skip for now moves the current unattempted drill to the back of the remaining queue without creating a result or advancing the completed count. It is disabled for the last remaining drill. Session-local queue order preserves the immutable deck snapshot; compare-and-set queue versions make retries and duplicate taps safe. Old skipped results remain readable. Repetitions are not logged separately. Persist the current position and completion transactionally; duplicate taps must not create extra results. End session preserves completed results and leaves remaining entries unattempted.
 
 Use questionnaire `v1`, question ID `feel`, and stable answer codes. Future questions receive stable IDs and explicit questionnaire versions; history renders answers using the recorded version rather than reinterpreting them.
 

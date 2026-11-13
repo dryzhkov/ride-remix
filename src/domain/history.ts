@@ -1,4 +1,4 @@
-import { deckSchema } from './schemas';
+import { deckSchema, sessionEntries } from './schemas';
 import type { Deck, DrillResult, DrillRevision, Session } from './schemas';
 
 const feelLabels: Record<string, string> = {
@@ -39,7 +39,7 @@ export function summarizeHistory(sessions: Session[], results: DrillResult[]): H
   const sorted = [...sessions].sort((a, b) => b.startedAt.localeCompare(a.startedAt) || a.id.localeCompare(b.id));
   const grouped = new Map<string, DrillHistory>();
   const history = sorted.map(session => {
-    const entries = session.deckSnapshot.entries.map(entry => {
+    const entries = sessionEntries(session).map(entry => {
       const result = results.find(r => r.sessionId === session.id && r.entryId === entry.id);
       if (!result) return { entry };
       const ratingLabel = describeRating(result.questionnaireVersion, result.answers);

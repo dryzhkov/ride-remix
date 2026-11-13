@@ -75,3 +75,7 @@ Current result: 24 approved cards, 22 eligible for automatic generation, with Ru
 Double-blip content is deferred. Retain the architect's [video reference starting at 11:00](https://www.youtube.com/watch?v=qhC5VH2_5QE&t=660s) for later review.
 
 The [three batches](./DRILL_CARD_DRAFTS.md) were approved together. Internal notes retain opportunities for future detail; no unconfirmed step-by-step input sequences were added.
+
+## Readability follow-up · 2026-11-13
+
+Library version 3 targets trained riders. The user confirmed body forward before power and clutch in at rear-tire obstacle contact for Full Clutch-Up / Unstuck; front tire against the obstacle with slight clutch slip for Front Stuff Balance; alternating turns with as many turns as possible for Full-Lock Rectangle; and rut peg weighting that presses the tire into the rut, rather than necessarily the downhill peg. Full Clutch-Up keeps obstacle contact conditional because it also supports open-area practice. Ready/acceleration/deceleration descriptions and “incline transition” remain unchanged. Sidehill retains its downhill-peg cue. Practice text is split into short steps, terminology is standardized, and the practice screen uses “Practice guide” and shows required terrain in the setup summary.
