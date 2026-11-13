@@ -1,6 +1,6 @@
 # Deploy and validate
 
-Task 12 is prepared locally. Live release validation remains pending. GitHub Actions is the deployment entry point. The repository includes a Fly configuration, a volume-permission initializer, and a consistent SQLite backup tool. Deployment creates billable Fly resources.
+The initial release is deployed at https://ride-remix.fly.dev. Task 12 remains in progress for live browser/provider and mobile offline acceptance. GitHub Actions is the deployment entry point. The repository includes a Fly configuration, a volume-permission initializer, and a consistent SQLite backup tool. Deployment creates billable Fly resources.
 
 ## Current validation
 
@@ -98,15 +98,15 @@ Complete and record these on the deployed HTTPS origin before marking task 12 co
 
 | Check | Required result | Current state |
 | --- | --- | --- |
-| Container | Image builds, starts on a fresh mounted volume, serves health, and runs server as node | Local Docker unavailable |
-| Networking | Trusted peers accepted, spoofed forwarding rejected, two external clients receive independent limits | Pending Fly access |
-| Access approval | Submit at `/invite`, verify pending denial, approve through SQL, receive and redeem email | Pending live keys/email |
+| Container | Image builds, starts on a fresh mounted volume, serves health, and runs server as node | GitHub release container and fresh-volume smoke passed |
+| Networking | Trusted peers accepted, spoofed forwarding rejected, two external clients receive independent limits | Fly HTTPS and IPv4 proxy path serving requests. Multi-client/spoofing live checks pending |
+| Access approval | Submit at `/invite`, verify pending denial, approve through SQL, receive and redeem email | Keys deployed. Live CAPTCHA/email approval flow pending |
 | Identity recovery | New browser logs into same account. Logout and operator revocation invalidate access | Pending live browser |
 | Sharing | Publish custom drill, preview publicly in another browser, save independent local copy | Automated coverage. Live pending |
 | Offline | Both riders save online, reopen in airplane mode, log independently, build next deck, repeat a drill | Automated coverage. Physical mobile pending |
 | Updates | Waiting update stays deferred during practice and applies between sessions without data loss | Worker simulation coverage. Live lifecycle pending |
 | Rider recovery | JSON export/import retains history, reports conflicts, and preserves active session | Automated coverage. Physical mobile pending |
-| Server recovery | Off-volume backup restores into a fresh candidate with accounts, sessions, and shared snapshots | Local automated drill. Fly drill pending |
+| Server recovery | Off-volume backup restores into a fresh candidate with accounts, sessions, and shared snapshots | Local restore drill passed. Live Fly backup creation/integrity verification passed. Restore cutover pending |
 | Monitoring | Observe security events, delivery failures, quota exhaustion, health failures and disk usage | Pending live configuration |
 
 ## Sources
@@ -115,4 +115,4 @@ Complete and record these on the deployed HTTPS origin before marking task 12 co
 
 ## Provisioning progress
 
-Fly app `ride-remix` and GitHub production environment/deploy secret are created. Seattle (`sea`) was rejected by Fly during provisioning, so the configuration uses San Jose (`sjc`). Provider secrets have been staged. The first deployment remains pending.
+Fly app `ride-remix` and GitHub production environment/deploy secret are created. Seattle (`sea`) was rejected by Fly during provisioning, so the configuration uses San Jose (`sjc`). Provider secrets are deployed. GitHub release run 43168443667 succeeded for commit cc35db2. One 512 MiB Machine is healthy in sjc with the encrypted volume attached. Public HTTPS routes, HTTP redirect, auth no-store/CSP, unauthenticated 401 and missing-snapshot 404 checks passed. Live browser automation remains unavailable.

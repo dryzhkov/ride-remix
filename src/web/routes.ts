@@ -8,7 +8,8 @@ export type AppRoute =
 
 export function parseRoute(pathname: string): AppRoute {
   const path = pathname.replace(/\/$/, '') || '/';
-  if (path === '/' || path === '/deck') return { page: 'deck', mode: 'list' };
+  if (path === '/') return { page: 'practice' };
+  if (path === '/deck') return { page: 'deck', mode: 'list' };
   if (path === '/deck/new') return { page: 'deck', mode: 'new' };
   if (path === '/practice') return { page: 'practice' };
   if (path === '/history') return { page: 'history' };

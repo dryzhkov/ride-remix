@@ -70,8 +70,10 @@ test('application entry connects practice, sharing, recovery and production work
   }
   try {
     await act(async () => { root.render(createElement(StrictMode, null, createElement(App))); });
-    await settle(() => !!container.querySelector('.empty-card'));
-    assert.equal(dom.window.location.pathname, '/deck');
+    await settle(() => container.textContent!.includes('No active practice'));
+    assert.equal(dom.window.location.pathname, '/practice');
+    assert.equal(container.querySelector('.bottom-nav a')?.textContent, 'Practice');
+    await click('Deck');
     assert.equal(container.querySelector('.deck-controls'), null);
     assert.equal(container.querySelectorAll('.bottom-nav a').length, 4);
     await click('New deck');

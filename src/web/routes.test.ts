@@ -4,7 +4,7 @@ import { parseRoute } from './routes';
 
 test('route parser separates deck library, generation and stable entity URLs', () => {
   const id = '133d5619-1234-4567-89ab-0123456789ab';
-  assert.deepEqual(parseRoute('/'), { page: 'deck', mode: 'list' });
+  assert.deepEqual(parseRoute('/'), { page: 'practice' });
   assert.deepEqual(parseRoute('/deck/'), { page: 'deck', mode: 'list' });
   assert.deepEqual(parseRoute('/deck/new'), { page: 'deck', mode: 'new' });
   assert.deepEqual(parseRoute(`/deck/${id}`), { page: 'deck', mode: 'detail', id });

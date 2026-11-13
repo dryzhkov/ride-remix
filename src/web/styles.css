@@ -73,3 +73,18 @@ p { line-height: 1.5; }
 
 .auth-choices { display: grid; gap: 1rem; }
 .auth-choices p { margin-top: 0; }
+
+.header-actions { display: flex; align-items: center; gap: .5rem; }
+.account-link, .offline-indicator { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; padding: 0; border-radius: 50%; }
+.offline-indicator { position: relative; color: var(--muted, #5d6e60); }
+.offline-indicator:hover, .account-link:hover { background: #dce5d7; }
+.status-dot { position: absolute; right: .35rem; bottom: .4rem; width: .5rem; height: .5rem; border-radius: 50%; background: #28734e; border: 2px solid var(--paper, #fff); box-sizing: content-box; }
+.settings-screen[hidden] { display: none; }
+.settings-screen .recovery-screen { display: grid; gap: 1.2rem; padding: 0; border: 0; background: transparent; }
+.settings-card, .settings-screen .pwa-status { margin: 0; padding: 1.4rem; background: var(--paper); border: 1px solid var(--line); border-radius: 1.1rem; font-size: 1rem; }
+.settings-card h2 { margin: 0 0 .65rem; font-size: 1.2rem; }
+.settings-card p { color: #536453; line-height: 1.6; margin: .6rem 0 1rem; }
+.settings-card h3 { margin: 0 0 .6rem; font-size: 1rem; }
+.restore-backup { margin-top: 1.5rem; padding-top: 1.3rem; border-top: 1px solid var(--line); }
+.settings-card input::file-selector-button { font: inherit; border: 0; border-radius: .4rem; background: #e4eade; color: #163d36; padding: .6rem .8rem; margin-right: .7rem; cursor: pointer; }
+.settings-card button { cursor: pointer; }

@@ -10,7 +10,7 @@ function message(worker: ServiceWorker, type: string): Promise<{ ready?: boolean
     worker.postMessage({ type }, [channel.port2]);
   });
 }
-export function PwaStatus({ repository, compact = false }: { repository: PracticeRepository; compact?: boolean }) {
+export function PwaStatus({ repository, onStatus }: { repository: PracticeRepository; onStatus: (status: string) => void }) {
   const [status, setStatus] = useState('Checking offline availability…');
   const [registration, setRegistration] = useState<ServiceWorkerRegistration>();
   const [waiting, setWaiting] = useState(false);
@@ -38,6 +38,8 @@ export function PwaStatus({ repository, compact = false }: { repository: Practic
     }).catch(() => { if (!cancelled) setStatus('Offline installation failed. Your saved practice data remains on this device. Reconnect and reload to retry.'); });
     return () => { cancelled = true; if (refresh) clearInterval(refresh); navigator.serviceWorker.removeEventListener('controllerchange', changed); };
   }, []);
+  const displayStatus = !import.meta.env?.PROD ? 'Offline installation is available in the production build.' : !('serviceWorker' in navigator) ? 'This browser does not support offline installation.' : status;
+  useEffect(() => { onStatus(waiting ? 'An app update is ready. Open Settings to apply it.' : displayStatus); }, [displayStatus, waiting, onStatus]);
   async function apply() {
     if (!registration?.waiting || busy) return;
     setBusy(true); setError('');
@@ -54,10 +56,10 @@ export function PwaStatus({ repository, compact = false }: { repository: Practic
       location.reload();
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not apply the update.'); } finally { setBusy(false); }
   }
-  return <aside className={`pwa-status${compact ? ' pwa-compact' : ''}`} aria-label="Offline availability">
-    <p role="status">{!import.meta.env?.PROD ? 'Offline installation is available in the production build.' : !('serviceWorker' in navigator) ? 'This browser does not support offline installation.' : status}</p>
+  return <section className="pwa-status settings-card" aria-label="Offline status"><h2>Offline status</h2><p className="settings-description">Practice anywhere with this app saved on your device.</p>
+    <p role="status">{displayStatus}</p>
     {waiting && <><p>An app and library update is ready. Apply it between practice sessions.</p><button disabled={busy} onClick={() => void apply()}>Apply update</button></>}
-    {registration && !compact && <button disabled={busy} onClick={() => { void registration.update().catch(() => setError('Could not check for updates. Reconnect and try again.')); }}>Check for updates</button>}
+    {registration && <button disabled={busy} onClick={() => { void registration.update().catch(() => setError('Could not check for updates. Reconnect and try again.')); }}>Check for updates</button>}
     {error && <p role="alert">{error}</p>}
-  </aside>;
+  </section>;
 }
