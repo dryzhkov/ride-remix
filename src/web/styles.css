@@ -28,7 +28,8 @@ input[type=checkbox] { accent-color: #245d46; }
 .app-header { display: flex; align-items: center; justify-content: space-between; min-height: 4.6rem; padding: .9rem 1.1rem; border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; gap: .25rem; align-items: center; font-size: 1.3rem; font-weight: 800; letter-spacing: -.05em; text-decoration: none; }
 .brand > span:first-child { font-weight: 450; }
-.brand-dot { display: grid; place-items: center; width: 1.65rem; height: 1.65rem; margin-left: .25rem; border-radius: 50%; font-weight: 500; background: #dce9a7; }
+.brand-icon { display: inline-flex; align-items: center; margin-left: .35rem; }
+.brand-icon .icon { width: 2rem; height: 2rem; }
 .account-link { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; padding: .45rem .7rem; font-size: .85rem; text-decoration: none; border-radius: 2rem; background: #e4eade; }
 .icon { width: 1.35rem; height: 1.35rem; flex-shrink: 0; vertical-align: middle; }
 main { padding: 1.3rem 1rem 1.5rem; }

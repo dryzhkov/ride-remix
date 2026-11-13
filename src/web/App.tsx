@@ -18,7 +18,7 @@ export function App() {
   return <PracticeApp />;
 }
 function Header({ offlineStatus }: { offlineStatus?: string }) {
-  return <header className="app-header"><a className="brand" href="/practice">Ride <span>Remix</span><span className="brand-dot" aria-hidden="true">↗</span></a><div className="header-actions">{offlineStatus && <a className="offline-indicator" href="/settings" aria-label={`Offline status: ${offlineStatus}`} title={offlineStatus}><Icon name="offline" />{offlineStatus.startsWith('Ready') && <span className="status-dot" />}</a>}<a className="account-link" href="/account" aria-label="Account" title="Account"><Icon name="account" /></a></div></header>;
+  return <header className="app-header"><a className="brand" href="/practice">Ride <span>Remix</span><span className="brand-icon" aria-hidden="true"><Icon name="motorbike" /></span></a><div className="header-actions">{offlineStatus && <a className="offline-indicator" href="/settings" aria-label={`Offline status: ${offlineStatus}`} title={offlineStatus}><Icon name="offline" />{offlineStatus.startsWith('Ready') && <span className="status-dot" />}</a>}<a className="account-link" href="/account" aria-label="Account" title="Account"><Icon name="account" /></a></div></header>;
 }
 function PracticeApp() {
   const [offlineStatus, setOfflineStatus] = useState('Checking offline availability…');

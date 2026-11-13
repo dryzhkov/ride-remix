@@ -1,5 +1,7 @@
-export function Icon({ name }: { name: 'deck' | 'practice' | 'history' | 'settings' | 'plus' | 'account' | 'offline' }) {
+export function Icon({ name }: { name: 'deck' | 'practice' | 'history' | 'settings' | 'plus' | 'account' | 'offline' | 'motorbike' }) {
   const paths = {
+    // Tabler Icons motorbike (MIT); see THIRD_PARTY_NOTICES.md.
+    motorbike: <><path d="M2 16a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M16 16a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M7.5 14h5l4 -4h-10.5m1.5 4l4 -4" /><path d="M13 6h2l1.5 3l2 4" /></>,
     deck: <><rect x="6" y="6" width="14" height="15" rx="3" /><path d="M16 3H6a3 3 0 0 0-3 3v11M10 11h6m-6 5h4" /></>,
     practice: <><path d="m9 5 11 7-11 7Z" /></>,
     history: <><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7m2-4v6l4 2" /></>,
