@@ -11,7 +11,7 @@ export function verifyDatabase(path: string): void {
     if (integrity.length !== 1 || Object.values(integrity[0])[0] !== 'ok') throw new Error('Database integrity check failed');
     if (db.prepare('PRAGMA foreign_key_check').all().length) throw new Error('Database foreign-key check failed');
     const version = db.prepare('PRAGMA user_version').get()?.user_version;
-    if (version !== 3) throw new Error('Unexpected authentication schema version');
+    if (version !== 3 && version !== 4) throw new Error('Unexpected authentication schema version');
     const sharing = db.prepare('SELECT max(version) AS version FROM sharing_migrations').get()?.version;
     if (sharing !== 1) throw new Error('Unexpected sharing schema version');
   } finally { db.close(); }

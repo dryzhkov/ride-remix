@@ -29,11 +29,11 @@ export class AuthStore {
       CREATE INDEX auth_sessions_account ON auth_sessions(account_id);
       CREATE TABLE rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, reset_at INTEGER NOT NULL);
       PRAGMA user_version=1; COMMIT;`);
-    else if (version !== 1 && version !== 2 && version !== 3) { this.db.close(); throw new Error('Unsupported server database version'); }
+    else if (version !== 1 && version !== 2 && version !== 3 && version !== 4) { this.db.close(); throw new Error('Unsupported server database version'); }
     if (version === 0 || version === 1) this.db.exec(`BEGIN IMMEDIATE;
       CREATE TABLE login_deliveries (id INTEGER PRIMARY KEY, email TEXT NOT NULL, requested_at INTEGER NOT NULL);
       PRAGMA user_version=2; COMMIT;`);
-    if (version !== 3) {
+    if (version !== 3 && version !== 4) {
       // Rebuild the CHECK constraint while keeping child foreign keys named accounts.
       this.db.exec('PRAGMA foreign_keys=OFF;');
       try {
@@ -52,6 +52,20 @@ export class AuthStore {
       this.db.exec('PRAGMA foreign_keys=ON;');
       if (this.db.prepare('PRAGMA foreign_key_check').all().length) { this.db.close(); throw new Error('Invalid migrated database references'); }
     }
+    if (version !== 4) this.db.exec(`BEGIN IMMEDIATE;
+      CREATE TABLE IF NOT EXISTS approval_deliveries (
+        account_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+        requested_at INTEGER NOT NULL, next_attempt_at INTEGER NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0, sent_at INTEGER);
+      CREATE TRIGGER IF NOT EXISTS notify_account_approval AFTER UPDATE OF status ON accounts
+        WHEN OLD.status='pending' AND NEW.status IN ('invited','active')
+        BEGIN
+          INSERT INTO approval_deliveries(account_id,requested_at,next_attempt_at)
+          VALUES(NEW.id,unixepoch()*1000,unixepoch()*1000)
+          ON CONFLICT(account_id) DO UPDATE SET requested_at=excluded.requested_at,
+            next_attempt_at=excluded.next_attempt_at,attempts=0,sent_at=NULL;
+        END;
+      PRAGMA user_version=4; COMMIT;`);
   }
   requestAccess(email: string, now = Date.now()): boolean {
     email = emailSchema.parse(email);
@@ -82,6 +96,23 @@ export class AuthStore {
     return this.db.prepare('SELECT id,email,requested_at FROM login_deliveries ORDER BY id LIMIT 1').get() as { id: number; email: string; requested_at: number } | undefined;
   }
   completeDelivery(id: number) { this.db.prepare('DELETE FROM login_deliveries WHERE id=?').run(id); }
+  nextApproval(now = Date.now()) {
+    return this.db.prepare(`SELECT d.*, a.email, a.status FROM approval_deliveries d
+      JOIN accounts a ON a.id=d.account_id
+      WHERE d.sent_at IS NULL AND d.attempts<5 AND d.next_attempt_at<=?
+      ORDER BY d.requested_at LIMIT 1`).get(now) as {
+        account_id: string; email: string; status: string; requested_at: number; attempts: number;
+      } | undefined;
+  }
+  completeApproval(accountId: string, now: number) {
+    this.db.prepare('UPDATE approval_deliveries SET sent_at=? WHERE account_id=?').run(now, accountId);
+  }
+  retryApproval(accountId: string, now: number) {
+    this.db.prepare('UPDATE approval_deliveries SET attempts=attempts+1,next_attempt_at=? WHERE account_id=?').run(now + 60_000, accountId);
+  }
+  postponeApproval(accountId: string, now: number) {
+    this.db.prepare('UPDATE approval_deliveries SET next_attempt_at=? WHERE account_id=?').run(now + 60_000, accountId);
+  }
   close() { this.db.close(); }
   private transaction<T>(run: () => T): T {
     this.db.exec('BEGIN IMMEDIATE');

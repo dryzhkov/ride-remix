@@ -14,6 +14,7 @@ const origin = 'https://ride.example.com';
 class Inbox implements LoginEmailSender {
   messages: { email: string; url: string }[] = [];
   fail = false;
+  async sendApprovalNotification() {}
   async sendLoginLink(email: string, url: string) {
     if (this.fail) throw new Error('Provider message contains sensitive data');
     this.messages.push({ email, url });
@@ -145,7 +146,7 @@ test('SQLite migrations/reopen preserve accounts, token state, sessions, and rat
     const first = new AuthStore(path); first.invite('rider@example.com'); const token = first.issue('rider@example.com')!;
     const login = first.redeem(token)!; first.allow([{ key: 'bucket', limit: 1, window: 60_000 }]); first.close();
     const reopened = new AuthStore(path);
-    assert.equal(reopened.db.prepare('PRAGMA user_version').get()?.user_version, 3);
+    assert.equal(reopened.db.prepare('PRAGMA user_version').get()?.user_version, 4);
     assert.equal(reopened.session(login.secret).status, 'ok'); assert.equal(reopened.redeem(token), undefined);
     assert.equal(reopened.allow([{ key: 'bucket', limit: 1, window: 60_000 }]), false);
     reopened.close();
@@ -172,7 +173,7 @@ test('public login responses complete independently of provider latency and elig
   const blocked = new Promise<void>(resolve => { release = resolve; });
   let started!: () => void;
   const sending = new Promise<void>(resolve => { started = resolve; });
-  const service = new AuthService(store, { async sendLoginLink() { started(); await blocked; } }, origin, undefined, undefined, { siteKey: 'test', verifier: { async verify() { return true; } } });
+  const service = new AuthService(store, { async sendApprovalNotification() {}, async sendLoginLink() { started(); await blocked; } }, origin, undefined, undefined, { siteKey: 'test', verifier: { async verify() { return true; } } });
   const app = await createApp(undefined, service, false);
   t.after(async () => { release(); await app.close(); });
   const request = (email: string) => app.inject({ method: 'POST', url: '/api/v1/auth/login-links', headers: { origin }, payload: { email, challengeToken: crypto.randomUUID() } });
@@ -214,7 +215,7 @@ test('shutdown finishes in-flight delivery and preserves queued jobs for restart
   const store = new AuthStore(path); store.invite('rider@example.com'); store.invite('next@example.com');
   let release!: () => void; const blocked = new Promise<void>(resolve => { release = resolve; });
   let started!: () => void; const sending = new Promise<void>(resolve => { started = resolve; });
-  const service = new AuthService(store, { async sendLoginLink() { started(); await blocked; } }, origin);
+  const service = new AuthService(store, { async sendApprovalNotification() {}, async sendLoginLink() { started(); await blocked; } }, origin);
   service.queueLink('rider@example.com'); service.queueLink('next@example.com');
   await sending;
   const closing = service.close(); release(); await closing;
@@ -236,9 +237,52 @@ test('version 1 database migrates to the delivery queue without losing auth reco
   first.db.exec('DROP TABLE login_deliveries; PRAGMA user_version=1;');
   first.close();
   const migrated = new AuthStore(path);
-  assert.equal(migrated.db.prepare('PRAGMA user_version').get()?.user_version, 3);
+  assert.equal(migrated.db.prepare('PRAGMA user_version').get()?.user_version, 4);
   assert.equal(migrated.session(session.secret).status, 'ok');
   assert.equal(migrated.redeem(token), undefined);
   assert.equal(migrated.enqueueDelivery('rider@example.com'), true);
   migrated.close();
+});
+
+test('SQL approval queues a durable notification, retries failures and avoids duplicate status-update emails', async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'ride-approval-'));
+  const path = join(directory, 'auth.sqlite');
+  let now = Date.now() + 1000;
+  let store = new AuthStore(path);
+  store.requestAccess('approved@example.com', now);
+  store.requestAccess('revoked@example.com', now);
+  assert.equal(store.nextApproval(now), undefined);
+  const approve = () => store.db.prepare("UPDATE accounts SET status='invited' WHERE email=?").run('approved@example.com');
+  approve();
+  store.db.prepare("UPDATE accounts SET status='invited' WHERE email=?").run('revoked@example.com');
+  store.revoke('revoked@example.com', now);
+  store.close();
+  store = new AuthStore(path);
+  let failed = true;
+  const messages: { email: string; url: string; key: string }[] = [];
+  const service = new AuthService(store, {
+    async sendLoginLink() { assert.fail('Approval must not generate login links'); },
+    async sendApprovalNotification(email, url, key) {
+      messages.push({ email, url, key });
+      if (failed) throw new Error('Provider unavailable');
+    },
+  }, origin, undefined, () => now);
+  t.after(async () => { await service.close(); rmSync(directory, { recursive: true, force: true }); });
+  service.startDeliveries(() => {});
+  await service.waitForDeliveries();
+  assert.equal(messages.length, 1);
+  assert.equal(messages[0].email, 'approved@example.com');
+  assert.equal(messages[0].url, `${origin}/auth/login`);
+  failed = false;
+  now += 61_000;
+  service.startDeliveries(() => {});
+  await service.waitForDeliveries();
+  assert.equal(messages.length, 2);
+  assert.equal(messages[0].key, messages[1].key);
+  approve();
+  service.startDeliveries(() => {});
+  await service.waitForDeliveries();
+  assert.equal(messages.length, 2);
+  assert.equal(store.nextApproval(now), undefined);
+  assert.equal(store.db.prepare('PRAGMA user_version').get()?.user_version, 4);
 });

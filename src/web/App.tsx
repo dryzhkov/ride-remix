@@ -18,7 +18,7 @@ export function App() {
   return <PracticeApp />;
 }
 function Header() {
-  return <header className="app-header"><a className="brand" href="/deck">Ride <span>Remix</span><span className="brand-dot" aria-hidden="true">↗</span></a><a className="account-link" href="/auth/login"><Icon name="account" /><span>Account</span></a></header>;
+  return <header className="app-header"><a className="brand" href="/deck">Ride <span>Remix</span><span className="brand-dot" aria-hidden="true">↗</span></a><a className="account-link" href="/invite"><Icon name="account" /><span>Account</span></a></header>;
 }
 function PracticeApp() {
   const [path, setPath] = useState(location.pathname);

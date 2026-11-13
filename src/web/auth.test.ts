@@ -59,6 +59,10 @@ test('access request UI requires verification and submits the action-bound token
     await settle(() => !!complete);
     assert.equal(renderedAction, 'access_request');
     assert.equal(container.querySelector('h1')?.textContent, 'Request access');
+    assert.match(container.textContent!, /email you when you’re approved/);
+    assert.equal(container.textContent!.includes('Back to decks'), false);
+    const signin = container.querySelector('main a[href="/auth/login"]')!;
+    assert.ok(signin.compareDocumentPosition(container.querySelector('form')!) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
     assert.ok(container.querySelector('a[href="/auth/login"]'));
     const submit = container.querySelector<HTMLButtonElement>('button[type=submit]')!;
     assert.equal(submit.disabled, true);

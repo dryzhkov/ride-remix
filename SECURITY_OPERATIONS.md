@@ -95,3 +95,10 @@ Security logs report event types and aggregated counts, at most once per event/m
 - Configure provider-level traffic protections/alerts and verify quotas against expected beta usage.
 
 Dependency audit and automated checks are recorded in the implementation handoff. Full card review remains task 13.
+
+
+## Approval notification delivery
+
+Authentication schema version 4 adds an approval outbox. A database trigger queues an email when an account transitions from pending to invited or active, including direct SQL approvals. The running service checks the outbox every five seconds. The message confirms approval and links to `/auth/login`. Existing approved accounts are not backfilled.
+
+Delivery shares the daily email quota. Provider failures retry after one minute, up to five attempts, using a stable Resend idempotency key. Revoked/pending accounts are skipped. Inspect `approval_deliveries` for `attempts`, `next_attempt_at`, and `sent_at`. After correcting a provider issue, reset attempts and next_attempt_at on the affected unsent row to retry. Repeating an UPDATE on an already approved account does not queue another email.

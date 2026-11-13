@@ -19,7 +19,7 @@ const now = Date.parse('2026-11-11T12:00:00Z');
 async function fixture(verifier: ChallengeVerifier = { async verify() { return true; } }) {
   const store = new AuthStore(':memory:');
   const deliveries: string[] = [];
-  const auth = new AuthService(store, { async sendLoginLink(email) { deliveries.push(email); } }, origin, undefined, () => now, { siteKey: 'public-key', verifier });
+  const auth = new AuthService(store, { async sendApprovalNotification() {}, async sendLoginLink(email) { deliveries.push(email); } }, origin, undefined, () => now, { siteKey: 'public-key', verifier });
   const app = await createApp(undefined, auth, false);
   const post = (route: string, email: string, challengeToken: string = randomUUID()) => app.inject({ method: 'POST', url: `/api/v1/auth/${route}`, headers: { origin }, payload: { email, challengeToken } });
   return { store, auth, app, post, deliveries };
@@ -74,7 +74,7 @@ test('CAPTCHA is required, validated before writes, and atomically single-use ac
 
 test('missing CAPTCHA configuration fails closed', async t => {
   const store = new AuthStore(':memory:');
-  const auth = new AuthService(store, { async sendLoginLink() { assert.fail('Must not send'); } }, origin);
+  const auth = new AuthService(store, { async sendApprovalNotification() {}, async sendLoginLink() { assert.fail('Must not send'); } }, origin);
   const app = await createApp(undefined, auth, false); t.after(() => app.close());
   const response = await app.inject({ method: 'POST', url: '/api/v1/auth/access-requests', headers: { origin }, payload: { email: 'a@example.com', challengeToken: 'forged' } });
   assert.equal(response.statusCode, 400);

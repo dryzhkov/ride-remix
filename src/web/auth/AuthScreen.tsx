@@ -45,7 +45,10 @@ export function AuthScreen() {
   }
   return <main id="main-content" className="auth-screen">
     <h1>{confirmation && !confirmed ? 'Confirm sign-in' : account ? 'Your account' : accessRequest ? 'Request access' : 'Sign in'}</h1>
-    <p>Sign in to publish decks. Practice and saved history stay on this device and work without signing in.</p>
+    {!account && !confirmation && <>
+      <p>{accessRequest ? 'Request access to the Ride Remix beta. We’ll email you when you’re approved.' : 'Already approved? Enter your approved email to receive a sign-in link.'}</p>
+      <p><a href={accessRequest ? '/auth/login' : '/invite'}>{accessRequest ? 'Already approved? Sign in' : 'New here? Request access first'}</a></p>
+    </>}
     {confirmation && !confirmed ? <>
       <p>{confirmationToken ? 'Select Continue to use this sign-in link. It expires after 15 minutes and works once.' : 'This link is missing its sign-in token. Request a new link.'}</p>
       {confirmationToken && <button className="auth-action" disabled={busy} onClick={() => void perform(async () => {
@@ -75,11 +78,10 @@ export function AuthScreen() {
       <input disabled={busy} id="login-email" type="email" autoComplete="email" maxLength={254} required value={email} onChange={e => setEmail(e.target.value)} />
       <TurnstileChallenge key={`${accessRequest}-${challengeAttempt}`} action={accessRequest ? 'access_request' : 'login'} onToken={receiveToken} />
       <button className="auth-action" type="submit" aria-busy={busy} disabled={busy || cooldown > 0 || !challengeToken}>{cooldown > 0 ? `${accessRequest ? 'Access requested' : 'Link requested'} · ${cooldown}s` : busy ? 'Submitting…' : accessRequest ? 'Submit access request' : 'Email me a sign-in link'}</button>
-      <p>{accessRequest ? 'The beta is closed. Your email must be approved before you can sign in.' : 'Use an approved email address to sign in.'}</p>
-      <p><a href={accessRequest ? '/auth/login' : '/invite'}>{accessRequest ? 'Already approved? Sign in' : 'Request beta access'}</a></p>
+
     </form>}
     {message && <p role="status">{message}</p>}
     {error && <p role="alert">{error}</p>}
-    <p><a href="/deck">Back to decks</a></p>
+
   </main>;
 }

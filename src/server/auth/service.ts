@@ -10,6 +10,7 @@ export class AuthService {
   readonly origin: string;
   private deliveryWork?: Promise<void>;
   private closing = false;
+  private poll?: ReturnType<typeof setInterval>;
   private reportDeliveryFailure: () => void = () => {};
 
   private audit: (event: string) => void = () => {};
@@ -17,6 +18,7 @@ export class AuthService {
     this.audit = audit;
     this.reportDeliveryFailure = reportFailure;
     this.scheduleDeliveries();
+    if (!this.poll) { this.poll = setInterval(() => this.scheduleDeliveries(), 5000); this.poll.unref(); }
   }
   auditSecurity(event: string) { this.audit(event); }
   queueLink(email: string): void {
@@ -34,6 +36,24 @@ export class AuthService {
   }
   private async deliverQueuedLinks() {
     while (!this.closing) {
+      const approval = this.store.nextApproval(this.now());
+      if (approval) {
+        if (!['invited', 'active'].includes(approval.status)) {
+          this.store.completeApproval(approval.account_id, this.now());
+        } else if (!this.store.allow([{ key: 'email:global', limit: this.limits.emailPerDay, window: 24 * 60 * 60_000 }], this.now())) {
+          this.store.postponeApproval(approval.account_id, this.now());
+          this.audit('email_quota');
+        } else {
+          try {
+            await this.sender.sendApprovalNotification(approval.email, `${this.origin}/auth/login`, `approval-${approval.account_id}-${approval.requested_at}`);
+            this.store.completeApproval(approval.account_id, this.now());
+          } catch {
+            this.store.retryApproval(approval.account_id, this.now());
+            this.reportDeliveryFailure();
+          }
+        }
+        continue;
+      }
       const job = this.store.nextDelivery();
       if (!job) return;
       if (job.requested_at > this.now() - LOGIN_LIFETIME) {
@@ -45,6 +65,7 @@ export class AuthService {
   async waitForDeliveries(): Promise<void> { await this.deliveryWork; }
   async close(): Promise<void> {
     this.closing = true;
+    if (this.poll) clearInterval(this.poll);
     await this.deliveryWork;
     this.store.close();
   }
