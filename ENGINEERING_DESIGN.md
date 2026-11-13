@@ -14,16 +14,18 @@ Status: approved by architect. Includes invite-only email login. Product scope f
 
 Use client-generated UUIDs, UTC timestamps, explicit schema versions, and stable built-in drill IDs. Content revisions are immutable; editing creates a new revision under the same logical ID.
 
-| Entity | Fields and invariants |
-| --- | --- |
+
+| Entity        | Fields and invariants                                                                                                                                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | DrillRevision | `id`, `revisionId`, `origin` (built-in/custom), optional `derivedFrom`, title, cue, instructions, setup details, focus tags, required equipment, suggested duration, timestamps. Published rider content excludes clinic provenance. |
-| Deck | `id`, title, generation inputs, ordered entries, timestamps. Each entry references an embedded drill revision and planned duration. Each logical drill occurs at most once. Editable and reusable. |
-| Session | `id`, `deckId`, immutable deck snapshot, `startedAt`, `endedAt?`, status (active/completed/ended-early), current entry. At most one active session per device. |
-| DrillResult | `id`, `sessionId`, entry ID, status (done/skipped), `completedAt`, questionnaire version, answers by question ID, setup snapshot. At most one result per session entry; no individual repetition counts or notes. |
-| Account | Server-generated UUID, unique normalized email, status (pending/invited/active/revoked), timestamps. Stable identity across browsers/devices; no username or password. |
-| LoginToken | Server: token hash, account ID, expiry, consumed timestamp. Random single-use secret; never store the raw token. |
-| AuthSession | Server: session-secret hash, account ID, creation/expiry/revocation timestamps. Multiple browser sessions per account; distinct from practice Session. |
-| SharedDeck | Server: random public ID, publisher account ID, payload version, immutable deck snapshot, creation timestamp. Public payload excludes publisher identity, rider history, ratings, and internal source metadata. |
+| Deck          | `id`, title, generation inputs, ordered entries, timestamps. Each entry references an embedded drill revision and planned duration. Each logical drill occurs at most once. Editable and reusable.                                   |
+| Session       | `id`, `deckId`, immutable deck snapshot, `startedAt`, `endedAt?`, status (active/completed/ended-early), current entry. At most one active session per device.                                                                       |
+| DrillResult   | `id`, `sessionId`, entry ID, status (done/skipped), `completedAt`, questionnaire version, answers by question ID, setup snapshot. At most one result per session entry; no individual repetition counts or notes.                    |
+| Account       | Server-generated UUID, unique normalized email, status (pending/invited/active/revoked), timestamps. Stable identity across browsers/devices; no username or password.                                                               |
+| LoginToken    | Server: token hash, account ID, expiry, consumed timestamp. Random single-use secret; never store the raw token.                                                                                                                     |
+| AuthSession   | Server: session-secret hash, account ID, creation/expiry/revocation timestamps. Multiple browser sessions per account; distinct from practice Session.                                                                               |
+| SharedDeck    | Server: random public ID, publisher account ID, payload version, immutable deck snapshot, creation timestamp. Public payload excludes publisher identity, rider history, ratings, and internal source metadata.                      |
+
 
 Local repositories own reads/writes; domain code does not depend on IndexedDB. Use transactions for session advancement and result persistence. Stable entity IDs and revision IDs support future ownership/sync mapping without treating the device as a user account. Future sync needs separate authenticated APIs and conflict rules; it is not implemented implicitly through sharing.
 
@@ -57,11 +59,13 @@ Starting a deck creates a session snapshot; subsequent deck or library edits can
 
 Practice one drill freely, then select Done. Show one optional question: **How did it feel?**
 
-| Stored answer | Label |
-| --- | --- |
-| `finding` | Still finding it |
-| `consistent` | Getting consistent |
-| `repeatable` | Repeatable today |
+
+| Stored answer | Label              |
+| ------------- | ------------------ |
+| `finding`     | Still finding it   |
+| `consistent`  | Getting consistent |
+| `repeatable`  | Repeatable today   |
+
 
 One tap records the answer and advances. Skip rating records completion without answers. Skipping the drill records a skipped result. Repetitions are not logged separately. Persist the current position and completion transactionally; duplicate taps must not create extra results. Ending early preserves completed results and leaves remaining entries unattempted.
 
@@ -73,16 +77,18 @@ History shows recent sessions, completed practice counts per logical drill, rati
 
 JSON over HTTPS, prefix `/api/v1`. Maintain shared request/response schemas, fixtures, and an OpenAPI contract in the repository. Reject unsupported payload versions and invalid content with structured errors: `{ error: { code, message, fieldErrors? } }`.
 
-| Endpoint | Contract |
-| --- | --- |
-| `POST /api/v1/auth/access-requests` | Planned in task 11. `{ email, challengeToken }`; generic `202`, creates/deduplicates pending access requests after CAPTCHA validation and throttling. |
-| `POST /api/v1/auth/login-links` | `{ email, challengeToken }` after task 11; generic `202` response, conditionally sends a login link to an invited/active account after CAPTCHA validation and throttling. |
-| `POST /api/v1/auth/redeem` | `{ token }`; atomically consumes a valid token, sets session cookie, returns `{ account: { id, email }, csrfToken }`. Invalid/expired/used tokens return a generic `400`. |
-| `GET /api/v1/auth/session` | Authenticated: `{ account: { id, email }, expiresAt, csrfToken }`; otherwise `401`. Private, never cached. |
-| `POST /api/v1/auth/logout` | Authenticated + CSRF protected; revokes session, clears cookie, returns `204`. |
-| `POST /api/v1/shared-decks` | Authenticated + CSRF protected. Request: `{ requestId, payloadVersion: 1, deck }`. Response `201`: `{ id, url, createdAt, payloadVersion: 1 }`. `deck` contains all drill content needed by the recipient. No local history or results accepted. Server derives publisher identity from the session. |
-| `GET /api/v1/shared-decks/:id` | `200`: `{ id, createdAt, payloadVersion: 1, deck }`; missing or operator-deleted snapshots return `404`. |
-| `GET /healthz` | Process health; no application data. |
+
+| Endpoint                            | Contract                                                                                                                                                                                                                                                                                             |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/v1/auth/access-requests` | Planned in task 11. `{ email, challengeToken }`; generic `202`, creates/deduplicates pending access requests after CAPTCHA validation and throttling.                                                                                                                                                |
+| `POST /api/v1/auth/login-links`     | `{ email, challengeToken }` after task 11; generic `202` response, conditionally sends a login link to an invited/active account after CAPTCHA validation and throttling.                                                                                                                            |
+| `POST /api/v1/auth/redeem`          | `{ token }`; atomically consumes a valid token, sets session cookie, returns `{ account: { id, email }, csrfToken }`. Invalid/expired/used tokens return a generic `400`.                                                                                                                            |
+| `GET /api/v1/auth/session`          | Authenticated: `{ account: { id, email }, expiresAt, csrfToken }`; otherwise `401`. Private, never cached.                                                                                                                                                                                           |
+| `POST /api/v1/auth/logout`          | Authenticated + CSRF protected; revokes session, clears cookie, returns `204`.                                                                                                                                                                                                                       |
+| `POST /api/v1/shared-decks`         | Authenticated + CSRF protected. Request: `{ requestId, payloadVersion: 1, deck }`. Response `201`: `{ id, url, createdAt, payloadVersion: 1 }`. `deck` contains all drill content needed by the recipient. No local history or results accepted. Server derives publisher identity from the session. |
+| `GET /api/v1/shared-decks/:id`      | `200`: `{ id, createdAt, payloadVersion: 1, deck }`; missing or operator-deleted snapshots return `404`.                                                                                                                                                                                             |
+| `GET /healthz`                      | Process health; no application data.                                                                                                                                                                                                                                                                 |
+
 
 Server generates cryptographically random, unguessable link IDs; possession grants public read access. No publication list, update, or public delete endpoint. Same account + `requestId` + payload returns the original publication; different payload under that account/key returns `409`. Store a canonical payload hash to enforce this. Client retains the request ID across retries. Missing/expired authentication returns `401`; revoked access returns `403`. Do not replay a pending publication under a different account without explicit rider action.
 
@@ -115,6 +121,7 @@ Log API failures and publication counts without full custom payloads or local pr
 
 ## Implementation tasks
 
+
 | Order | Task                                       | Completion criteria                                                                                                                                                                                                                                                                                                                                                                                                                       | Status      |
 | ----- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | 1     | Scaffold app, server, shared contracts, CI | TypeScript build, lint/type checks, separate domain/repository boundaries, OpenAPI skeleton, production container.                                                                                                                                                                                                                                                                                                                        | Complete    |
@@ -127,9 +134,10 @@ Log API failures and publication counts without full custom payloads or local pr
 | 8     | Implement snapshot sharing                 | Authenticated publishing, public GET contract, account-scoped retry idempotency, validation/quotas, link preview and atomic local save.                                                                                                                                                                                                                                                                                                   | Complete    |
 | 9     | Complete PWA and recovery                  | Installable manifest, shell/library caching, readiness/update states, offline flows, backup/restore UI; no auth caching or credentials in exports.                                                                                                                                                                                                                                                                                        | Complete    |
 | 10    | UI redesign and polish                     | Mobile-first compact card/bento layouts, clear thumb-friendly actions and contextual FAB, fixed bottom navigation with icons and safe-area spacing; dedicated /deck, /deck/new, /deck/:deckId, /practice, /practice/:sessionId, and /history routes with working refresh/back/forward; Settings contains backup/recovery; correct select-arrow padding and control margins; accessible responsive polish and focused routing/flow checks. | Complete    |
-| 11 | Security review and hardening | Turnstile on access requests/login links, manual email approval, pending-account migration, proxy-aware limiting, public-read protection, app-wide security headers, abuse monitoring, and focused security regression checks. See task 11 requirements below. | Complete |
-| 12    | Deploy and validate                        | Fly volume/single-Machine configuration, email sender/provider setup, backup/restore check, focused integration and device acceptance tests.                                                                                                                                                                                                                                                                                              | In progress |
-| 13    | Full card review and polish                | After V1 implementation, review all 24 drafted cards with the architect in batches. Polish starter cards, resolve setup/technique gaps, confirm labels and durations, and expand the library. Revisit both deferred double-blip cards using the saved video reference. Track approval per card before adding reviewed content.                                                                                                            | Not started |
+| 11    | Security review and hardening              | Turnstile on access requests/login links, manual email approval, pending-account migration, proxy-aware limiting, public-read protection, app-wide security headers, abuse monitoring, and focused security regression checks. See task 11 requirements below.                                                                                                                                                                            | Complete    |
+| 12    | Deploy and validate                        | Fly volume/single-Machine configuration, email sender/provider setup, backup/restore check, focused integration and device acceptance tests.                                                                                                                                                                                                                                                                                              | Complete    |
+| 13    | Full card review and polish                | After V1 implementation, review all 24 drafted cards with the architect in batches. Polish starter cards, resolve setup/technique gaps, confirm labels and durations, and expand the library. Revisit both deferred double-blip cards using the saved video reference. Track approval per card before adding reviewed content.                                                                                                            | In progress |
+
 
 Tasks 4–6 depend on 2 and provisional starter content from 3. Full card review does not block implementation. Task 7 depends on shared schemas and server storage; task 8 depends on 7; task 9 integrates the local flows; task 10 polishes the integrated UI after tasks 4–9; task 11 hardens the closed beta before deployment; task 12 gates release; task 13 resumes the deferred full card review.
 

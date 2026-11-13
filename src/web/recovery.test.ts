@@ -16,8 +16,8 @@ async function seed() {
 test('JSON export roundtrips through recovery with an explicit dedup/conflict report', async () => {
   const source = await seed(); const target = await openPracticeRepository(crypto.randomUUID());
   const backup = await exportBackup(source);
-  const first = await restoreBackup(target, backup); assert.equal(first.imported.length, 4);
-  const second = await restoreBackup(target, backup); assert.equal(second.skipped.length, 4);
+  const first = await restoreBackup(target, backup); assert.equal(first.imported.length, getStarterLibrary().drills.length + 1);
+  const second = await restoreBackup(target, backup); assert.equal(second.skipped.length, getStarterLibrary().drills.length + 1);
   const changed = JSON.parse(backup); changed.decks[0].title = 'Conflicting title';
   const report = await restoreBackup(target, JSON.stringify(changed)); assert.equal(report.conflicting.length, 1);
   assert.equal((await target.listDecks())[0].title, 'Backup practice');

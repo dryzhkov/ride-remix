@@ -5,7 +5,7 @@ import { eligibleDrills, generateDrills } from './generation';
 import type { GenerationInputs } from './generation';
 import type { DrillRevision } from './schemas';
 const inputs: GenerationInputs = { timeBudgetMinutes: 20, focuses: [], equipment: { cones: 'unspecified', obstacle: 'unspecified', incline: 'unspecified' } };
-const library = () => getStarterLibrary().drills;
+const library = () => getStarterLibrary().drills.slice(0, 3);
 
 test('default budget selects distinct drills within 20 minutes with randomized variety', () => {
   const first = generateDrills(library(), inputs, () => 0);
@@ -19,7 +19,7 @@ test('default budget selects distinct drills within 20 minutes with randomized v
 test('equipment excludes only explicit unavailability; optional incline remains eligible', () => {
   assert.equal(eligibleDrills(library(), inputs).length, 3);
   const filtered = eligibleDrills(library(), { ...inputs, equipment: { cones: 'unavailable', obstacle: 'unavailable', incline: 'unavailable' } });
-  assert.deepEqual(filtered.map(d => d.title), ['Moving Outside-Peg Weight', 'Collection']);
+  assert.deepEqual(filtered.map(d => d.title), ['Moving Outside-Peg Weight', 'On / Off / Out / In Drill']);
   assert.equal(eligibleDrills(library(), { ...inputs, equipment: { ...inputs.equipment, cones: 'available' } }).length, 3);
 });
 
@@ -60,4 +60,23 @@ test('custom revisions use their declared durations and generation leaves inputs
 
 test('invalid time budgets are rejected rather than silently ignored', () => {
   for (const timeBudgetMinutes of [0, -1, 1.5, NaN]) assert.throws(() => generateDrills(library(), { ...inputs, timeBudgetMinutes }));
+});
+
+
+test('expanded library generates within budgets across every focus and equipment combination', () => {
+  const drills = getStarterLibrary().drills;
+  const focuses: GenerationInputs['focuses'][] = [[], ['balance'], ['clutch-throttle'], ['body-positioning'], ['obstacle-crossing']];
+  for (const focus of focuses) for (let mask = 0; mask < 8; mask++) for (const budget of [10, 20, 30, 45, 60]) {
+    const equipment: GenerationInputs['equipment'] = { cones: mask & 1 ? 'available' : 'unavailable', obstacle: mask & 2 ? 'available' : 'unavailable', incline: mask & 4 ? 'available' : 'unavailable' };
+    const result = generateDrills(drills, { timeBudgetMinutes: budget, focuses: focus, equipment }, () => .5);
+    assert.ok(result.drills.reduce((sum, d) => sum + d.suggestedDurationMinutes, 0) <= budget);
+    assert.equal(new Set(result.drills.map(d => d.id)).size, result.drills.length);
+    for (const drill of result.drills) {
+      assert.equal(drill.automaticGeneration, true);
+      assert.ok(!focus.length || focus.some(tag => drill.focusTags.includes(tag)));
+      assert.ok(drill.requiredEquipment.every(item => equipment[item] !== 'unavailable'));
+      assert.deepEqual(drill.terrainRequirements, []);
+    }
+  }
+  assert.ok(generateDrills(drills, { ...inputs, focuses: ['obstacle-crossing'] }).drills.length > 0);
 });

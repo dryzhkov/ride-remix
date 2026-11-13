@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "libraryVersion": 1,
+  "libraryVersion": 2,
   "drills": [
     {
       "schemaVersion": 1,
@@ -18,8 +18,13 @@
         "Start with 9–10 cones in a line. Count and spacing are flexible.",
         "Begin with wide gaps and progressively bring the cones closer together."
       ],
-      "focusTags": ["balance", "clutch-throttle"],
-      "requiredEquipment": ["cones"],
+      "focusTags": [
+        "balance",
+        "clutch-throttle"
+      ],
+      "requiredEquipment": [
+        "cones"
+      ],
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
@@ -37,8 +42,13 @@
         "Progress toward full steering lock while maintaining the alignment.",
         "Practice turns in both directions."
       ],
-      "setupDetails": ["Use an open riding area."],
-      "focusTags": ["balance", "body-positioning"],
+      "setupDetails": [
+        "Use an open riding area."
+      ],
+      "focusTags": [
+        "balance",
+        "body-positioning"
+      ],
       "requiredEquipment": [],
       "terrainRequirements": [],
       "automaticGeneration": true,
@@ -48,9 +58,9 @@
     {
       "schemaVersion": 1,
       "id": "8200e165-97cd-4d53-90c9-98a3c8e459a4",
-      "revisionId": "5c42903c-6260-4592-b789-0f6d1ddf9782",
+      "revisionId": "59cadf43-b03d-4698-91d0-6bc07893b726",
       "origin": "built-in",
-      "title": "Collection",
+      "title": "On / Off / Out / In Drill",
       "cue": "Throttle on, throttle off, clutch out, clutch in. Keep the two actions separate.",
       "instructions": [
         "Start with the clutch fully pulled in.",
@@ -59,13 +69,525 @@
         "Repeat, preserving the separation between throttle input and clutch release.",
         "Practice in motion and stationary with feet on the ground where possible."
       ],
-      "setupDetails": ["Use flat ground. An incline is optional."],
-      "focusTags": ["clutch-throttle"],
+      "setupDetails": [
+        "Use flat ground. An incline is optional."
+      ],
+      "focusTags": [
+        "clutch-throttle"
+      ],
       "requiredEquipment": [],
       "terrainRequirements": [],
       "automaticGeneration": true,
       "suggestedDurationMinutes": 10,
-      "createdAt": "2026-11-10T00:00:00Z"
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "f06979bc-2e7d-4d64-9658-cf9d1fca2310",
+      "revisionId": "05ae3f50-5abe-4868-980a-b2dcfeb0c716",
+      "origin": "built-in",
+      "title": "Static Balance",
+      "cue": "Head over foot. Steer toward the fall.",
+      "instructions": [
+        "Work on balance in both steering directions. Weight the outside peg and align your head over that foot. Steer toward the direction of the fall to correct your balance. Focus on front-brake control."
+      ],
+      "setupDetails": [
+        "Space to balance in place."
+      ],
+      "focusTags": [
+        "balance"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "01315efd-d939-4dc7-92ef-fd6c3f76399b",
+      "revisionId": "2be9f532-cd45-473e-b49b-be79b358e187",
+      "origin": "built-in",
+      "title": "Incline Clutch Control",
+      "cue": "Steady engine note. Control movement with the friction zone.",
+      "instructions": [
+        "Use the clutch friction zone to control rolling up and down the incline. Keep the engine note steady as you adjust clutch engagement."
+      ],
+      "setupDetails": [
+        "Incline."
+      ],
+      "focusTags": [
+        "clutch-throttle"
+      ],
+      "requiredEquipment": [
+        "incline"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "b7b69011-2a51-44d8-b66f-a4e0de0716b4",
+      "revisionId": "ad9ef325-51bc-4dfd-923d-f07524cbaac0",
+      "origin": "built-in",
+      "title": "Rear Brake–Clutch Handoff",
+      "cue": "Transfer the hold without moving.",
+      "instructions": [
+        "At low RPM, practice transferring between holding the bike with the rear brake and holding it through the clutch friction zone. Keep the motorcycle stationary during each handoff."
+      ],
+      "setupDetails": [
+        "Incline. A small incline works."
+      ],
+      "focusTags": [
+        "clutch-throttle"
+      ],
+      "requiredEquipment": [
+        "incline"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "31d1f788-e797-468a-a093-2318b8e13309",
+      "revisionId": "304a0669-31cc-441c-a06d-5dcec203f896",
+      "origin": "built-in",
+      "title": "Front Stuff Balance",
+      "cue": "Balance and clutch control at steady RPM.",
+      "instructions": [
+        "Combine balance and clutch control at the obstacle while maintaining steady RPM. Practice seated, then standing, then progress to rolling in."
+      ],
+      "setupDetails": [
+        "Sizable obstacle such as a rock or log, roughly over 1 ft tall."
+      ],
+      "focusTags": [
+        "balance",
+        "clutch-throttle"
+      ],
+      "requiredEquipment": [
+        "obstacle"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "090a18e8-1dce-4c07-8c19-87cd44dd9307",
+      "revisionId": "824b88fd-e172-416f-95f1-7ecc1d92d77f",
+      "origin": "built-in",
+      "title": "Outside-Peg Mount and Dismount",
+      "cue": "Find balance before swinging your leg.",
+      "instructions": [
+        "Find balance on the outside peg before swinging a leg over the motorcycle. Practice mounting and dismounting with attention to front-brake control and full steering lock."
+      ],
+      "setupDetails": [
+        "Space beside the bike. Uphill variant optional."
+      ],
+      "focusTags": [
+        "balance",
+        "body-positioning"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "ec553030-f769-467f-8ae0-57756f11137c",
+      "revisionId": "c60d9cfd-b4a3-4594-b9a0-e7156d8f8cbc",
+      "origin": "built-in",
+      "title": "On-Command Balance",
+      "cue": "Carry moving balance into a complete stop.",
+      "instructions": [
+        "Begin with moving outside-peg balance. Come to a complete stop while preserving head-over-foot alignment and outside-peg weighting."
+      ],
+      "setupDetails": [
+        "Open riding area."
+      ],
+      "focusTags": [
+        "balance",
+        "clutch-throttle"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "e7c67a18-305e-413f-bd7b-46d8bc8d7d42",
+      "revisionId": "d9498ec2-feb7-4336-8e43-61379f57473e",
+      "origin": "built-in",
+      "title": "Full-Lock Rectangle",
+      "cue": "Outside peg and steady clutch control at full lock.",
+      "instructions": [
+        "Practice full-lock turns in the rectangle, coordinating outside-peg weight, body position, and steady clutch control."
+      ],
+      "setupDetails": [
+        "Cone rectangle with adjustable dimensions and spacing."
+      ],
+      "focusTags": [
+        "balance",
+        "clutch-throttle"
+      ],
+      "requiredEquipment": [
+        "cones"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "09af6689-2ddd-466c-b732-df2aa0779de0",
+      "revisionId": "8f3aaca9-3390-4cbc-a777-efcb46c241a8",
+      "origin": "built-in",
+      "title": "Ready, Acceleration, and Deceleration Positions",
+      "cue": "Move between the three positions.",
+      "instructions": [
+        "Rehearse the ready, acceleration, and deceleration positions and the transitions between them."
+      ],
+      "setupDetails": [
+        "Open riding area."
+      ],
+      "focusTags": [
+        "body-positioning"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "f5615f74-678d-42ba-b35c-3179bb7b13f5",
+      "revisionId": "01f89f2d-cebf-4c39-b906-59bce008bceb",
+      "origin": "built-in",
+      "title": "Loading the Flywheel",
+      "cue": "Close the throttle before the incline transition.",
+      "instructions": [
+        "Practice timing the falling engine RPM as you approach the incline transition. Close the throttle before the transition."
+      ],
+      "setupDetails": [
+        "Small incline."
+      ],
+      "focusTags": [
+        "clutch-throttle"
+      ],
+      "requiredEquipment": [
+        "incline"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "0298b32c-92b8-45fc-8049-85c1945e71c1",
+      "revisionId": "7414afb1-283b-4406-b4f6-68017fdb7857",
+      "origin": "built-in",
+      "title": "Engine-Off Clutch-Up Rehearsal",
+      "cue": "Rehearse the coordination with the engine off.",
+      "instructions": [
+        "Rehearse coordinating hip movement, suspension rebound, throttle, front brake, and clutch."
+      ],
+      "setupDetails": [
+        "Engine off."
+      ],
+      "focusTags": [
+        "clutch-throttle",
+        "body-positioning"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "983b9059-5971-42a7-90b8-a06d2681a246",
+      "revisionId": "1386d1b7-a740-4069-9349-9e2798ea3973",
+      "origin": "built-in",
+      "title": "Engine-Running Clutch-Up Rehearsal",
+      "cue": "Coordinate the movement with falling RPM.",
+      "instructions": [
+        "Use the one-foot-down progression to rehearse clutch-up coordination, paying attention to falling RPM."
+      ],
+      "setupDetails": [
+        "Engine running, one foot down."
+      ],
+      "focusTags": [
+        "clutch-throttle",
+        "body-positioning"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 15,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "4e92ede1-66f1-4832-b9da-03e2ad303cbc",
+      "revisionId": "2c395cfb-5657-4ec8-ba0a-c7f8d7371aeb",
+      "origin": "built-in",
+      "title": "Rolling Suspension Compression and Rebound",
+      "cue": "Coordinate with the rebound. Avoid pulling on the bars.",
+      "instructions": [
+        "While rolling, practice suspension compression and the body-position transition as the suspension rebounds."
+      ],
+      "setupDetails": [
+        "Open riding area."
+      ],
+      "focusTags": [
+        "body-positioning"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "93a395d8-91e8-449f-968f-0442c71be46d",
+      "revisionId": "537a0319-89b7-4683-b81c-08fa666d464b",
+      "origin": "built-in",
+      "title": "Rolling Clutch-Only Lift",
+      "cue": "Steady throttle. Coordinate suspension and clutch.",
+      "instructions": [
+        "While rolling, maintain steady throttle and coordinate suspension movement with clutch timing to practice lifting the front wheel."
+      ],
+      "setupDetails": [
+        "Open riding area. Builds on Incline Clutch-Up."
+      ],
+      "focusTags": [
+        "clutch-throttle",
+        "body-positioning",
+        "obstacle-crossing"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 15,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "38c0f185-70a7-4232-aa49-bc114c5022bf",
+      "revisionId": "4e220b0d-3cac-4459-bd26-938a60380dd8",
+      "origin": "built-in",
+      "title": "Obstacle Approach Body Position",
+      "cue": "Coordinate your position with front-tire contact.",
+      "instructions": [
+        "Practice the body-position change as the front tire transitions onto the obstacle."
+      ],
+      "setupDetails": [
+        "Usable obstacle."
+      ],
+      "focusTags": [
+        "body-positioning",
+        "obstacle-crossing"
+      ],
+      "requiredEquipment": [
+        "obstacle"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 10,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "debaf9ff-8f79-4d44-a8f7-981c2879eee3",
+      "revisionId": "f5cb73eb-ff76-4fc6-b33a-f6fbc3de3728",
+      "origin": "built-in",
+      "title": "Incline Clutch-Up",
+      "cue": "Weight shift, rebound, clutch timing, controlled return.",
+      "instructions": [
+        "Coordinate weight shift, suspension rebound, and clutch timing to practice lifting the front wheel. Include control of the front wheel's return."
+      ],
+      "setupDetails": [
+        "Incline."
+      ],
+      "focusTags": [
+        "clutch-throttle",
+        "body-positioning",
+        "obstacle-crossing"
+      ],
+      "requiredEquipment": [
+        "incline"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 15,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "99066222-fe2b-4be4-97f6-82410251ed5a",
+      "revisionId": "12914dd4-6520-4998-8afe-5807043365a4",
+      "origin": "built-in",
+      "title": "Trials Lines and Gates",
+      "cue": "Connect balance and control along a marked line.",
+      "instructions": [
+        "Follow the marked line, combining balance, body position, and clutch/throttle control through the gates."
+      ],
+      "setupDetails": [
+        "Marked line with gates."
+      ],
+      "focusTags": [
+        "balance",
+        "clutch-throttle"
+      ],
+      "requiredEquipment": [
+        "cones"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 15,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "84b1ffc1-4c2e-4ec5-970e-a98d5c543ce6",
+      "revisionId": "206788ec-2046-4ec2-9940-d3681dbf56e4",
+      "origin": "built-in",
+      "title": "Full Clutch-Up",
+      "cue": "Combine the clutch-up components.",
+      "instructions": [
+        "Combine the earlier clutch-up rehearsals into the complete movement."
+      ],
+      "setupDetails": [
+        "Open riding area."
+      ],
+      "focusTags": [
+        "clutch-throttle",
+        "body-positioning",
+        "obstacle-crossing"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 15,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "b260e486-e904-450c-a29d-71123198e4b1",
+      "revisionId": "faaec6ca-f5fc-45a5-97db-601e7b56c953",
+      "origin": "built-in",
+      "title": "Front-Tire Placement",
+      "cue": "Place the front tire on the obstacle.",
+      "instructions": [
+        "Use the one-foot-down progression to practice placing the front tire on the obstacle."
+      ],
+      "setupDetails": [
+        "Usable obstacle, one-foot-down progression."
+      ],
+      "focusTags": [
+        "clutch-throttle",
+        "body-positioning",
+        "obstacle-crossing"
+      ],
+      "requiredEquipment": [
+        "obstacle"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 15,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "6c1e2f8c-3263-4a51-972a-decef926f113",
+      "revisionId": "fb5e81ce-c74b-4090-b6b8-a804955d9073",
+      "origin": "built-in",
+      "title": "Unstuck Technique",
+      "cue": "Pay attention to clutch-release timing.",
+      "instructions": [
+        "Rehearse the unstuck movement from this starting position. Watch for early clutch release."
+      ],
+      "setupDetails": [
+        "Start with the front tire on an obstacle."
+      ],
+      "focusTags": [
+        "clutch-throttle",
+        "body-positioning",
+        "obstacle-crossing"
+      ],
+      "requiredEquipment": [
+        "obstacle"
+      ],
+      "terrainRequirements": [],
+      "automaticGeneration": true,
+      "suggestedDurationMinutes": 15,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "ffb707f7-e976-4296-9b83-b790f1ca5b09",
+      "revisionId": "c4875d0f-3f48-4642-860a-4bf84c2a54b9",
+      "origin": "built-in",
+      "title": "Rut Control",
+      "cue": "Downhill peg weight and rear-wheel traction.",
+      "instructions": [
+        "Focus on downhill peg weighting and maintaining rear-wheel traction through throttle and clutch control."
+      ],
+      "setupDetails": [
+        "Rut."
+      ],
+      "focusTags": [
+        "balance",
+        "clutch-throttle",
+        "body-positioning"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [
+        "Rut"
+      ],
+      "automaticGeneration": false,
+      "suggestedDurationMinutes": 15,
+      "createdAt": "2026-11-12T00:00:00Z"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "d02ef165-75aa-47f8-b3fb-6344958ce789",
+      "revisionId": "40a82a8f-4586-4428-a6f9-1655047572a9",
+      "origin": "built-in",
+      "title": "Sidehill Control",
+      "cue": "Downhill peg weight and rear-wheel traction.",
+      "instructions": [
+        "Apply the balance and traction control practiced in Rut Control to a sidehill. Focus on downhill peg weighting and throttle and clutch control."
+      ],
+      "setupDetails": [
+        "Sidehill."
+      ],
+      "focusTags": [
+        "balance",
+        "clutch-throttle",
+        "body-positioning"
+      ],
+      "requiredEquipment": [],
+      "terrainRequirements": [
+        "Sidehill"
+      ],
+      "automaticGeneration": false,
+      "suggestedDurationMinutes": 15,
+      "createdAt": "2026-11-12T00:00:00Z"
     }
   ]
 }

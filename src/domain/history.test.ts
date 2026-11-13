@@ -28,7 +28,7 @@ test('counts done results across revisions, excluding skips and unattempted entr
   const summary = summarizeHistory([older, newer], [olderDone, skip, newerDone]);
   assert.equal(summary.sessions[0].session.id, newer.id);
   assert.equal(summary.sessions[1].completedCount, 1); assert.equal(summary.sessions[1].skippedCount, 1);
-  assert.equal(summary.sessions[1].unattemptedCount, 1);
+  assert.equal(summary.sessions[1].unattemptedCount, older.deckSnapshot.entries.length - 2);
   const drill = summary.drills.find(d => d.drill.id === oldDrill.id)!;
   assert.equal(drill.completedCount, 2); assert.equal(drill.drill.title, 'Updated title');
   assert.deepEqual(drill.attempts.map(a => a.ratingLabel), ['Not rated', 'Getting consistent']);

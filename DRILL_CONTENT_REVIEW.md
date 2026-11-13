@@ -1,16 +1,16 @@
 # Drill content review
 
-Status: full review deferred by architect until after implementation. Three provisional starter cards are designated in [card drafts](./DRILL_CARD_DRAFTS.md). Internal working document based on `olympia-clinic-drills.md`.
+Status: the user approved all 24 non-double-blip cards on 2026-11-12, renaming Collection to **On / Off / Out / In Drill**. Library version 2 includes all 24; two double-blip cards remain deferred. Historical metadata and source gaps below are retained as an internal review record.
 
 ## Proposed labels
 
-Approved focus labels are **Balance**, **Clutch / Throttle control**, **Body positioning**, and **Obstacle Crossing**. Stored values are `balance`, `clutch-throttle`, `body-position`, and `obstacles`. A drill can have multiple values. All skills selects every focus.
+Approved focus labels are **Balance**, **Clutch / Throttle control**, **Body positioning**, and **Obstacle Crossing**. Stored values are `balance`, `clutch-throttle`, `body-positioning`, and `obstacle-crossing`. A drill can have multiple values. All skills selects every focus.
 
 Durations are proposed practice blocks, including resetting between repetitions. Use the architect-approved 10-minute baseline for isolated skills. Combined techniques use the architect-approved 15-minute default. Riders can adjust their deck. These values are independent of the original class schedule.
 
 The generation filters currently cover cones, obstacle, and incline. Exact surface and obstacle requirements belong in setup text. Obstacle means any usable obstacle, including a rock or log. Rut and sidehill drills are manually selectable in V1, with terrain requirements displayed, and excluded from automatic generation.
 
-Proceed with the designated provisional starter library for implementation. “Clarify” identifies a specific source gap for later content review and expansion.
+The original provisional implementation used three cards. All 24 reviewed cards are now approved. “Clarify” in the historical table identifies source gaps for future elaboration, not remaining approval gates.
 
 ## Proposed metadata
 
@@ -64,8 +64,14 @@ The architect clarified that On / Off refers to throttle and Out / In refers to 
 
 ## Next review decisions
 
-Tracked follow-up: engineering task 13 resumes full card review and polish after V1 implementation, including the three provisional starter cards and remaining drafts.
+Content review is approved. The runtime library includes all 24 reviewed cards and preserves existing saved snapshots.
+
+Review setup, cue, practice sequence, focus, duration, and generation eligibility for each card. Resolve missing technique details with the rider before publishing them. Preserve logical drill IDs and existing saved deck/session revisions when updating the runtime library.
+
+After content review, check generated decks across time budgets, skill focuses, and equipment availability; check manual selection for terrain-specific drills and whether dependent techniques need ordering or eligibility rules. The current generator shuffles eligible drills and fits distinct cards into the time budget; it does not model prerequisites. No new sequencing rule has been approved yet.
+
+Current result: 24 approved cards, 22 eligible for automatic generation, with Rut Control and Sidehill Control manual-only. The On / Off / Out / In rename has a new revision and keeps its logical drill ID. No new prerequisite or sequencing rules were requested.
 
 Double-blip content is deferred. Retain the architect's [video reference starting at 11:00](https://www.youtube.com/watch?v=qhC5VH2_5QE&t=660s) for later review.
 
-Review the 24 cards in [three batches](./DRILL_CARD_DRAFTS.md). Correct or approve each batch together. Internal review notes identify details still needed before publication.
+The [three batches](./DRILL_CARD_DRAFTS.md) were approved together. Internal notes retain opportunities for future detail; no unconfirmed step-by-step input sequences were added.

@@ -1,6 +1,6 @@
 # Drill card drafts
 
-Status: full review deferred by architect until after implementation. Metadata follows [content review](./DRILL_CONTENT_REVIEW.md). Drafts use the source notes and architect clarifications.
+Status: all 24 non-double-blip cards approved by the user on 2026-11-12 and included in library version 2. Collection is renamed **On / Off / Out / In Drill**. The two double-blip cards remain deferred. The drafts and review notes below preserve the original review record; they are not rider-facing content.
 
 ## Provisional implementation library
 
@@ -14,7 +14,7 @@ Use the following three cards to implement the core flow. All use 10-minute bloc
 
 All require an appropriate riding area as described in their setup text. Other cards remain drafts for later expansion. Review notes are internal and excluded from rider-facing content. This small library does not yet cover Obstacle Crossing or every equipment filter. Empty filter results use the designed empty state.
 
-Review each batch with corrections by drill ID. Approve wording, setup, labels, and durations together. Double-blip cards are deferred.
+The user approved all three batches together, with the Collection rename. Double-blip cards remain deferred.
 
 ## Batch 1 · Balance and control
 
@@ -138,7 +138,7 @@ Review each batch with corrections by drill ID. Approve wording, setup, labels, 
 
 **Review:** Source names the positions but does not describe them. Add their body-position cues before publication.
 
-### Power Delivery / Clutch Control — On / Off / Out / In · `collection`
+### On / Off / Out / In Drill · `collection`
 
 10 min · Clutch / Throttle control
 

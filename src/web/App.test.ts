@@ -98,15 +98,16 @@ test('application entry connects practice, sharing, recovery and production work
     root = createRoot(container);
     await act(async () => { root.render(createElement(App)); });
     await settle(() => !!container.querySelector('.practice-drill'));
-    for (let entry = 0; entry < 2; entry++) {
+    const drillCount = (await repository.listSessions())[0].deckSnapshot.entries.length;
+    for (let entry = 0; entry < drillCount; entry++) {
       await click('Done');
       await click('Getting consistent');
-      await settle(() => !!container.querySelector(entry === 0 ? '.practice-drill' : '.practice-finish'));
+      await settle(() => !!container.querySelector(entry < drillCount - 1 ? '.practice-drill' : '.practice-finish'));
     }
     await click('View history');
     await settle(() => !!container.querySelector('.history-sessions'));
-    assert.match(container.textContent!, /2 done/);
-    assert.equal((await repository.listResults()).length, 2);
+    assert.ok(container.textContent!.includes(`${drillCount} done`));
+    assert.equal((await repository.listResults()).length, drillCount);
     assert.equal(dom.window.location.pathname, '/history');
     // Browser Back restores the completed session URL and its immutable finish view.
     await act(async () => { dom.window.history.back(); await new Promise(resolve => setTimeout(resolve, 30)); });
