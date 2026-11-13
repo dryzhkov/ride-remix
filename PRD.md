@@ -12,8 +12,7 @@ Build a deck → practice one drill at a time → log and optionally rate each d
 
 | Feature | What riders can do |
 |---|---|
-| Build and remix a deck | Choose available time, practice setup, and skill focus. Get a short deck from the drill library, then keep, swap, or reorder drills. |
-| Create custom drills | Create a drill or copy and adapt a clinic drill. Save it for future decks. |
+| Build and remix a deck | Choose practice setup and skill focus. Generate a deck of matching drills, then add, remove, or reorder drills. Drill durations provide a planned-time estimate without limiting selection. |
 | Practice and rate | View one drill at a time with a short cue and setup details. Log **Still finding it**, **Getting consistent**, or **Repeatable today**. Ratings are optional. |
 | Track history and progression | See recent sessions, how often each drill was practiced, and ratings across attempts. Show the setup alongside each attempt so riders can compare similar conditions. |
 | Start the next ride | Build a fresh deck from History. Bring back a drill or move on to something new. |
@@ -26,7 +25,7 @@ Use the Olympia clinic material only to seed the initial drill database. The lib
 
 ## Scope
 
-Three main screens are **Deck**, **Practice**, and **History**. Offline video, account sync, and competitive features are outside V1.
+Three main screens are **Deck**, **Practice**, and **History**. Custom drill creation, copying and editing, offline video, account sync, and competitive features are outside the current UI scope.
 
 ## Acceptance test
 

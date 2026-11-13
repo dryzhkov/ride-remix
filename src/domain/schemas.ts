@@ -6,7 +6,8 @@ const text = z.string().trim().min(1).max(10000);
 export const focusSchema = z.enum(['balance', 'clutch-throttle', 'body-positioning', 'obstacle-crossing']);
 export const equipmentSchema = z.enum(['cones', 'obstacle', 'incline']);
 export const generationInputsSchema = z.strictObject({
-  timeBudgetMinutes: z.number().int().positive().default(20),
+  // Accepted only to preserve existing deck snapshots and backups; never used for selection.
+  timeBudgetMinutes: z.number().int().positive().optional(),
   focuses: z.array(focusSchema).default([]),
   equipment: z.strictObject({
     cones: z.enum(['available', 'unavailable', 'unspecified']),

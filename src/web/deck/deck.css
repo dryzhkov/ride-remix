@@ -11,7 +11,7 @@
 .deck-screen .deck-primary { color: #fff; background: #163d36; border-color: #163d36; }
 .deck-equipment { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
 .deck-entries { padding-left: 1.6rem; }
-.deck-entries > li, .deck-library article, .deck-editor { padding: 1rem; background: #fffdf8; border: 1px solid #c9d1c8; border-radius: .7rem; margin-bottom: 1rem; }
+.deck-entries > li, .deck-library article { padding: 1rem; background: #fffdf8; border: 1px solid #c9d1c8; border-radius: .7rem; margin-bottom: 1rem; }
 .deck-screen h3 { margin: .3rem 0; }
 .deck-requirements { font-size: .92rem; }
 .deck-requirements p { margin: .25rem 0; }
@@ -70,7 +70,6 @@
 .deck-library article > p { font-size: .85rem; }
 .deck-library .deck-requirements { font-size: .8rem; }
 .deck-library .deck-actions button { font-size: .8rem; }
-.deck-editor { margin: 0; border-radius: 1rem; }
 @media (max-width: 360px) { .saved-deck-card .deck-actions { grid-template-columns: 1fr; } }
 .deck-screen .deck-controls > fieldset { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35rem; }
 .deck-screen .deck-controls .deck-choice { font-size: .75rem; padding: .4rem .5rem; line-height: 1.25; }

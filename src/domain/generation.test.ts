@@ -1,18 +1,18 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { getStarterLibrary } from '../content/starter-library';
-import { eligibleDrills, generateDrills } from './generation';
+import { eligibleDrills, filterDrills, generateDrills } from './generation';
 import type { GenerationInputs } from './generation';
 import type { DrillRevision } from './schemas';
-const inputs: GenerationInputs = { timeBudgetMinutes: 20, focuses: [], equipment: { cones: 'unspecified', obstacle: 'unspecified', incline: 'unspecified' } };
+const inputs: GenerationInputs = { focuses: [], equipment: { cones: 'unspecified', obstacle: 'unspecified', incline: 'unspecified' } };
 const library = () => getStarterLibrary().drills.slice(0, 3);
 
-test('default budget selects distinct drills within 20 minutes with randomized variety', () => {
+test('generation includes all matching drills in randomized order', () => {
   const first = generateDrills(library(), inputs, () => 0);
   const second = generateDrills(library(), inputs, () => .999);
-  assert.equal(first.drills.length, 2);
-  assert.equal(new Set(first.drills.map(d => d.id)).size, 2);
-  assert.equal(first.drills.reduce((n,d) => n + d.suggestedDurationMinutes, 0), 20);
+  assert.equal(first.drills.length, 3);
+  assert.equal(new Set(first.drills.map(d => d.id)).size, 3);
+  assert.equal(first.drills.reduce((n,d) => n + d.suggestedDurationMinutes, 0), 30);
   assert.notDeepEqual(first.drills.map(d => d.id), second.drills.map(d => d.id));
 });
 
@@ -36,18 +36,16 @@ test('manual terrain drills never enter generation even with matching equipment 
   assert.match(generateDrills([manual], inputs).emptyReason!, /manually/);
 });
 
-test('unused budget is acceptable and duplicate logical revisions cannot repeat', () => {
+test('duplicate logical revisions cannot repeat', () => {
   const drills = library();
   const generated = generateDrills([...drills, { ...drills[0], revisionId: crypto.randomUUID() }], { ...inputs, timeBudgetMinutes: 35 });
   assert.equal(generated.drills.length, 3);
   assert.equal(generated.drills.reduce((n,d) => n + d.suggestedDurationMinutes, 0), 30);
 });
 
-test('empty feedback distinguishes unsupported focus, blocked equipment, and short time', () => {
+test('empty feedback distinguishes unsupported focus and blocked equipment', () => {
   assert.match(generateDrills(library(), { ...inputs, focuses: ['obstacle-crossing'] }).emptyReason!, /Obstacle Crossing/);
   assert.match(generateDrills([library()[0]], { ...inputs, equipment: { ...inputs.equipment, cones: 'unavailable' } }).emptyReason!, /unavailable equipment: cones/);
-  assert.match(generateDrills(library(), { ...inputs, timeBudgetMinutes: 9 }).emptyReason!, /at least 10 minutes/);
-  assert.deepEqual(generateDrills(library(), { ...inputs, timeBudgetMinutes: 9 }).drills, []);
 });
 
 test('custom revisions use their declared durations and generation leaves inputs untouched', () => {
@@ -58,18 +56,30 @@ test('custom revisions use their declared durations and generation leaves inputs
   assert.deepEqual(custom, before);
 });
 
-test('invalid time budgets are rejected rather than silently ignored', () => {
-  for (const timeBudgetMinutes of [0, -1, 1.5, NaN]) assert.throws(() => generateDrills(library(), { ...inputs, timeBudgetMinutes }));
+test('legacy budgets do not limit generation and new decks need no budget', () => {
+  const expected = generateDrills(library(), inputs, () => .5);
+  assert.equal(expected.drills.length, 3);
+  for (const timeBudgetMinutes of [1, 9, 20, 60]) {
+    assert.deepEqual(generateDrills(library(), { ...inputs, timeBudgetMinutes }, () => .5), expected);
+  }
 });
 
+test('manual library filters include terrain drills while automatic generation excludes them', () => {
+  const drills = getStarterLibrary().drills;
+  const filtered = filterDrills(drills, inputs);
+  assert.ok(filtered.some(d => d.title === 'Rut Control'));
+  assert.ok(filtered.some(d => d.title === 'Sidehill Control'));
+  assert.ok(!eligibleDrills(drills, inputs).some(d => !d.automaticGeneration));
+  assert.ok(filterDrills(drills, { ...inputs, focuses: ['obstacle-crossing'] }).every(d => d.focusTags.includes('obstacle-crossing')));
+});
 
-test('expanded library generates within budgets across every focus and equipment combination', () => {
+test('expanded library includes every eligible drill across focus and equipment combinations', () => {
   const drills = getStarterLibrary().drills;
   const focuses: GenerationInputs['focuses'][] = [[], ['balance'], ['clutch-throttle'], ['body-positioning'], ['obstacle-crossing']];
-  for (const focus of focuses) for (let mask = 0; mask < 8; mask++) for (const budget of [10, 20, 30, 45, 60]) {
+  for (const focus of focuses) for (let mask = 0; mask < 8; mask++) {
     const equipment: GenerationInputs['equipment'] = { cones: mask & 1 ? 'available' : 'unavailable', obstacle: mask & 2 ? 'available' : 'unavailable', incline: mask & 4 ? 'available' : 'unavailable' };
-    const result = generateDrills(drills, { timeBudgetMinutes: budget, focuses: focus, equipment }, () => .5);
-    assert.ok(result.drills.reduce((sum, d) => sum + d.suggestedDurationMinutes, 0) <= budget);
+    const result = generateDrills(drills, { focuses: focus, equipment }, () => .5);
+    assert.equal(result.drills.length, eligibleDrills(drills, { ...inputs, focuses: focus, equipment }).length);
     assert.equal(new Set(result.drills.map(d => d.id)).size, result.drills.length);
     for (const drill of result.drills) {
       assert.equal(drill.automaticGeneration, true);

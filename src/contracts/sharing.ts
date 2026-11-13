@@ -17,7 +17,7 @@ export const sharedDrillSchema = drillRevisionSchema.extend({
 });
 export const sharedDeckSchema = deckSchema.safeExtend({
   title: text(sharingLimits.titleLength),
-  generationInputs: generationInputsSchema.extend({ timeBudgetMinutes: z.number().int().positive().max(sharingLimits.durationMinutes) }),
+  generationInputs: generationInputsSchema.extend({ timeBudgetMinutes: z.number().int().positive().max(sharingLimits.durationMinutes).optional() }),
   entries: z.array(deckEntrySchema.extend({ drill: sharedDrillSchema, plannedDurationMinutes: z.number().int().positive().max(sharingLimits.durationMinutes) })).min(1).max(sharingLimits.entries),
 });
 export const publicIdSchema = z.string().regex(/^[A-Za-z0-9_-]{32}$/);

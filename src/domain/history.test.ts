@@ -60,7 +60,7 @@ test('explicit next deck selection deduplicates logical drills and keeps selecte
   const drills = getStarterLibrary().drills; const original = structuredClone(drills);
   const deck = deckFromHistory([drills[1], drills[0], drills[1]], laterTime);
   assert.deepEqual(deck.entries.map(e => e.drill.id), [drills[1].id, drills[0].id]);
-  assert.equal(deck.generationInputs.timeBudgetMinutes, drills[1].suggestedDurationMinutes + drills[0].suggestedDurationMinutes);
+  assert.equal(deck.generationInputs.timeBudgetMinutes, undefined);
   assert.deepEqual(deck.generationInputs.equipment, { cones: 'unspecified', obstacle: 'unspecified', incline: 'unspecified' });
   assert.deepEqual(drills, original);
   assert.throws(() => deckFromHistory([]));

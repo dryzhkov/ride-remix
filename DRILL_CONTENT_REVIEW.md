@@ -68,7 +68,7 @@ Content review is approved. The runtime library includes all 24 reviewed cards a
 
 Review setup, cue, practice sequence, focus, duration, and generation eligibility for each card. Resolve missing technique details with the rider before publishing them. Preserve logical drill IDs and existing saved deck/session revisions when updating the runtime library.
 
-After content review, check generated decks across time budgets, skill focuses, and equipment availability; check manual selection for terrain-specific drills and whether dependent techniques need ordering or eligibility rules. The current generator shuffles eligible drills and fits distinct cards into the time budget; it does not model prerequisites. No new sequencing rule has been approved yet.
+After content review, check generated decks across skill focuses and equipment availability; check manual selection for terrain-specific drills and whether dependent techniques need ordering or eligibility rules. The current generator shuffles and includes all distinct eligible drills without a time limit; it does not model prerequisites. No new sequencing rule has been approved yet.
 
 Current result: 24 approved cards, 22 eligible for automatic generation, with Rut Control and Sidehill Control manual-only. The On / Off / Out / In rename has a new revision and keeps its logical drill ID. No new prerequisite or sequencing rules were requested.
 

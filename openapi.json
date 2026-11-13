@@ -922,7 +922,6 @@
                   }
                 },
                 "required": [
-                  "timeBudgetMinutes",
                   "focuses",
                   "equipment"
                 ],
@@ -1246,7 +1245,6 @@
                   }
                 },
                 "required": [
-                  "timeBudgetMinutes",
                   "focuses",
                   "equipment"
                 ],

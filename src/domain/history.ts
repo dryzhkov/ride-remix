@@ -75,7 +75,6 @@ export function deckFromHistory(drills: DrillRevision[], now = new Date().toISOS
   const unique = [...new Map(drills.map(drill => [drill.id, drill])).values()];
   return deckSchema.parse({ schemaVersion: 1, id: crypto.randomUUID(), title: 'Next ride',
     createdAt: now, updatedAt: now,
-    generationInputs: { timeBudgetMinutes: unique.reduce((sum, d) => sum + d.suggestedDurationMinutes, 0),
-      focuses: [], equipment: { cones: 'unspecified', obstacle: 'unspecified', incline: 'unspecified' } },
+    generationInputs: { focuses: [], equipment: { cones: 'unspecified', obstacle: 'unspecified', incline: 'unspecified' } },
     entries: unique.map(drill => ({ id: crypto.randomUUID(), drill: structuredClone(drill), plannedDurationMinutes: drill.suggestedDurationMinutes })) });
 }
