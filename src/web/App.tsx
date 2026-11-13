@@ -14,11 +14,11 @@ import { Icon } from './ui/Icon';
 
 const navigation = [ ['deck', 'Deck'], ['practice', 'Practice'], ['history', 'History'], ['settings', 'Settings'] ] as const;
 export function App() {
-  if (location.pathname.startsWith('/auth/') || /^\/invite\/?$/.test(location.pathname)) return <div className="app"><Header /><AuthScreen /><nav className="bottom-nav" aria-label="Main navigation">{navigation.map(([page, label]) => <a key={page} href={`/${page}`}><Icon name={page} /><span>{label}</span></a>)}</nav></div>;
+  if (location.pathname.startsWith('/auth/') || /^\/(?:invite|account)\/?$/.test(location.pathname)) return <div className="app"><Header /><AuthScreen /><nav className="bottom-nav" aria-label="Main navigation">{navigation.map(([page, label]) => <a key={page} href={`/${page}`}><Icon name={page} /><span>{label}</span></a>)}</nav></div>;
   return <PracticeApp />;
 }
 function Header() {
-  return <header className="app-header"><a className="brand" href="/deck">Ride <span>Remix</span><span className="brand-dot" aria-hidden="true">↗</span></a><a className="account-link" href="/invite"><Icon name="account" /><span>Account</span></a></header>;
+  return <header className="app-header"><a className="brand" href="/deck">Ride <span>Remix</span><span className="brand-dot" aria-hidden="true">↗</span></a><a className="account-link" href="/account"><Icon name="account" /><span>Account</span></a></header>;
 }
 function PracticeApp() {
   const [path, setPath] = useState(location.pathname);

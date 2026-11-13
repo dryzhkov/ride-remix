@@ -70,3 +70,6 @@ p { line-height: 1.5; }
 @media (min-width: 650px) { main { padding: 1.8rem 2rem 2rem; } .app-header { padding-inline: 2rem; } .bottom-nav { padding-inline: 5rem; } }
 @media (prefers-reduced-motion: no-preference) { button, .bottom-nav a { transition: background .15s, box-shadow .15s; } button:hover:not(:disabled) { box-shadow: 0 2px 8px #173c3515; } }
 @media (forced-colors: active) { .app select { appearance: auto; background-image: none; } .bottom-nav a[aria-current='page'] { outline: 2px solid; } }
+
+.auth-choices { display: grid; gap: 1rem; }
+.auth-choices p { margin-top: 0; }

@@ -3,7 +3,7 @@ export function createWorkerSource(assets: string[], version: string): string {
   return `
 const CACHE = ${JSON.stringify(`ride-remix-shell-${version}`)};
 const ASSETS = ${JSON.stringify(assets)};
-const NETWORK_ONLY = /^\\/(?:api(?:\\/|$)|invite(?:\\/|$)|auth(?:\\/|$)|healthz(?:\\/|$))/;
+const NETWORK_ONLY = /^\\/(?:api(?:\\/|$)|account(?:\\/|$)|invite(?:\\/|$)|auth(?:\\/|$)|healthz(?:\\/|$))/;
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     if (await hasActiveSession()) throw new Error('Update postponed during active practice');

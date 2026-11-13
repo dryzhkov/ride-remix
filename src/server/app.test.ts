@@ -61,7 +61,7 @@ test('static shell delivery preserves no-store on auth and invite routes', async
   writeFileSync(join(root, 'sw.js'), '// worker');
   const app = await createApp(root, undefined, false);
   t.after(async () => { await app.close(); rmSync(root, { recursive: true, force: true }); });
-  for (const url of ['/auth/login', '/auth/confirm', '/invite', '/invite/']) {
+  for (const url of ['/auth/login', '/auth/confirm', '/invite', '/invite/', '/account', '/account/']) {
     const response = await app.inject({ url, headers: { accept: 'text/html' } });
     assert.equal(response.statusCode, 200);
     assert.equal(response.headers['cache-control'], 'no-store', url);

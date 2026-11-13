@@ -44,3 +44,5 @@ Task 11 adds email access requests requiring manual approval, simple Turnstile v
 Request beta access at `/invite`. Approved riders sign in at `/auth/login`.
 
 Releases use the manual GitHub **Deploy closed beta** workflow after Fly bootstrap. Checks and a fresh-volume container smoke run before deployment. Configure the production environment's app-scoped `FLY_API_TOKEN` and follow [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+The Account link opens `/account`. Signed-out riders choose Request beta access or Sign in before seeing the matching form and CAPTCHA. Signed-in riders see their account and Sign out. Direct `/invite` and `/auth/login` links open their respective forms.

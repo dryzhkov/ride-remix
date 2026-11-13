@@ -3,7 +3,7 @@ import { registerHooks } from 'node:module';
 import { test } from 'node:test';
 import { act, createElement } from 'react';
 import { JSDOM } from 'jsdom';
-import { accessResponseSchema } from '../contracts/auth';
+import { authFixtures, accessResponseSchema } from '../contracts/auth';
 
 registerHooks({ load(url, context, nextLoad) {
   if (url.endsWith('.css')) return { format: 'module', source: '', shortCircuit: true };
@@ -11,7 +11,7 @@ registerHooks({ load(url, context, nextLoad) {
 } });
 
 test('access request UI requires verification and submits the action-bound token with email', async () => {
-  const dom = new JSDOM('<div id="root"></div>', { url: 'https://ride.example.com/invite' });
+  const dom = new JSDOM('<div id="root"></div>', { url: 'https://ride.example.com/account' });
   let complete: ((token: string) => void) | undefined;
   let renderedAction = '';
   dom.window.turnstile = {
@@ -21,10 +21,13 @@ test('access request UI requires verification and submits the action-bound token
   let submitted: unknown;
   let accessSubmissions = 0;
   let loginSubmissions = 0;
+  let signedIn = false;
   const globals = {
     window: dom.window, document: dom.window.document, location: dom.window.location,
     HTMLElement: dom.window.HTMLElement, IS_REACT_ACT_ENVIRONMENT: true,
     fetch: async (url: unknown, init?: RequestInit) => {
+      if (url === '/api/v1/auth/logout') { signedIn = false; return new Response(null, { status: 204 }); }
+      if (url === '/api/v1/auth/session' && signedIn) return Response.json(authFixtures.session);
       if (url === '/api/v1/auth/session') return Response.json({ error: { code: 'UNAUTHENTICATED', message: 'Sign in' } }, { status: 401 });
       if (url === '/api/v1/auth/challenge-config') return Response.json({ siteKey: 'public-key' });
       if (url === '/api/v1/auth/login-links') {
@@ -54,6 +57,12 @@ test('access request UI requires verification and submits the action-bound token
   try {
     const { App } = await import('./App');
     await act(async () => { root.render(createElement(App)); });
+    await settle(() => container.textContent!.includes('Request beta access')) ;
+    assert.equal(container.querySelector('input'), null);
+    assert.equal(container.querySelector('form'), null);
+    assert.equal(document.querySelector('script[src*="challenges.cloudflare.com"]'), null);
+    const requestButton = [...container.querySelectorAll('button')].find(button => button.textContent === 'Request beta access')!;
+    await act(async () => { requestButton.click(); });
     await settle(() => !!document.querySelector('script[src*="challenges.cloudflare.com"]'));
     await act(async () => { document.querySelector('script')!.dispatchEvent(new dom.window.Event('load')); });
     await settle(() => !!complete);
@@ -109,6 +118,21 @@ test('access request UI requires verification and submits the action-bound token
     assert.equal(loginSubmissions, 1);
     assert.equal(container.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled, true);
     assert.match(container.querySelector('button[type=submit]')!.textContent!, /Link requested/);
+    signedIn = true;
+    dom.window.history.replaceState(null, '', '/account');
+    await act(async () => { root.render(createElement(App, { key: 'signed-in' })); });
+    await settle(() => container.textContent!.includes('Signed in as'));
+    assert.equal(container.querySelector('form'), null);
+    const signOut = [...container.querySelectorAll('button')].find(button => button.textContent === 'Sign out')!;
+    assert.ok(signOut);
+    await act(async () => { signOut.click(); });
+    await settle(() => container.textContent!.includes('Request beta access'));
+    assert.equal(container.querySelector('input'), null);
+    const signIn = [...container.querySelectorAll('button')].find(button => button.textContent === 'Sign in')!;
+    await act(async () => { signIn.click(); });
+    await settle(() => !!container.querySelector('form'));
+    assert.equal(container.querySelector('h1')?.textContent, 'Sign in');
+    assert.equal(renderedAction, 'login');
   } finally {
     await act(async () => { root.unmount(); });
     dom.window.close();

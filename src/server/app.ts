@@ -45,7 +45,7 @@ export async function createApp(webRoot = resolve('dist/web'), auth?: AuthServic
   // Static-file delivery can overwrite headers set before sendFile runs.
   app.addHook('onSend', async (request, reply, payload) => {
     const path = request.url.split('?')[0];
-    if (path.startsWith('/api/') || path.startsWith('/auth/') || /^\/invite\/?$/.test(path)) {
+    if (path.startsWith('/api/') || path.startsWith('/auth/') || /^\/(?:invite|account)\/?$/.test(path)) {
       reply.header('Cache-Control', 'no-store');
     } else if (path === '/sw.js' || String(reply.getHeader('Content-Type')).includes('text/html')) {
       reply.header('Cache-Control', 'no-cache');
@@ -59,7 +59,7 @@ export async function createApp(webRoot = resolve('dist/web'), auth?: AuthServic
     reply.header('X-Frame-Options', 'DENY');
     reply.header('Content-Security-Policy', "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'");
     const path = request.url.split('?')[0];
-    if (path.startsWith('/api/') || path.startsWith('/auth/') || /^\/invite\/?$/.test(path)) reply.header('Cache-Control', 'no-store');
+    if (path.startsWith('/api/') || path.startsWith('/auth/') || /^\/(?:invite|account)\/?$/.test(path)) reply.header('Cache-Control', 'no-store');
     const ip = path === '/healthz' ? request.raw.socket.remoteAddress : resolveIp(request);
     if (!ip) { audit('untrusted_proxy'); return reply.code(403).send({ error: { code: 'INVALID_PROXY', message: 'Request route is unavailable' } }); }
     request.clientIp = ip;
@@ -88,7 +88,7 @@ export async function createApp(webRoot = resolve('dist/web'), auth?: AuthServic
     const isApi = pathname === '/api' || pathname.startsWith('/api/');
     const acceptsHtml = request.headers.accept?.includes('text/html');
     if (!isApi && request.method === 'GET' && acceptsHtml && existsSync(resolve(webRoot, 'index.html'))) {
-      return reply.header('Cache-Control', (pathname.startsWith('/auth/') || /^\/invite\/?$/.test(pathname)) ? 'no-store' : 'no-cache').sendFile('index.html');
+      return reply.header('Cache-Control', (pathname.startsWith('/auth/') || /^\/(?:invite|account)\/?$/.test(pathname)) ? 'no-store' : 'no-cache').sendFile('index.html');
     }
 
     const body: ApiError = { error: { code: 'NOT_FOUND', message: 'Resource not found' } };

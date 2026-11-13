@@ -10,7 +10,9 @@ if (location.pathname === '/auth/confirm' && location.hash) history.replaceState
 
 export function AuthScreen() {
   const confirmation = location.pathname === '/auth/confirm';
-  const accessRequest = /^\/invite\/?$/.test(location.pathname);
+  const [mode, setMode] = useState<'choose' | 'access' | 'login'>(() => /^\/invite\/?$/.test(location.pathname) ? 'access' : location.pathname.startsWith('/auth/') ? 'login' : 'choose');
+  const accessRequest = mode === 'access';
+  const [checkingSession, setCheckingSession] = useState(true);
   const [challengeToken, setChallengeToken] = useState('');
   const [challengeAttempt, setChallengeAttempt] = useState(0);
   const receiveToken = useCallback((token: string) => setChallengeToken(token), []);
@@ -33,7 +35,8 @@ export function AuthScreen() {
     const abort = new AbortController();
     getAuthSession(abort.signal).then(session => {
       setAccount(session.account); setCsrfToken(session.csrfToken);
-    }).catch(() => { /* Sign-in remains available when unauthenticated or offline. */ });
+    }).catch(() => { /* Sign-in remains available when unauthenticated or offline. */ })
+      .finally(() => { if (!abort.signal.aborted) setCheckingSession(false); });
     return () => abort.abort();
   }, []);
   async function perform(action: () => Promise<void>) {
@@ -44,12 +47,12 @@ export function AuthScreen() {
     finally { actionLock.current = false; setBusy(false); }
   }
   return <main id="main-content" className="auth-screen">
-    <h1>{confirmation && !confirmed ? 'Confirm sign-in' : account ? 'Your account' : accessRequest ? 'Request access' : 'Sign in'}</h1>
-    {!account && !confirmation && <>
+    <h1>{confirmation && !confirmed ? 'Confirm sign-in' : account ? 'Your account' : mode === 'choose' ? 'Account' : accessRequest ? 'Request access' : 'Sign in'}</h1>
+    {!checkingSession && !account && !confirmation && mode !== 'choose' && <>
       <p>{accessRequest ? 'Request access to the Ride Remix beta. We’ll email you when you’re approved.' : 'Already approved? Enter your approved email to receive a sign-in link.'}</p>
       <p><a href={accessRequest ? '/auth/login' : '/invite'}>{accessRequest ? 'Already approved? Sign in' : 'New here? Request access first'}</a></p>
     </>}
-    {confirmation && !confirmed ? <>
+    {checkingSession && !confirmation ? <p role="status">Checking your account…</p> : confirmation && !confirmed ? <>
       <p>{confirmationToken ? 'Select Continue to use this sign-in link. It expires after 15 minutes and works once.' : 'This link is missing its sign-in token. Request a new link.'}</p>
       {confirmationToken && <button className="auth-action" disabled={busy} onClick={() => void perform(async () => {
         const session = await redeemLoginLink(confirmationToken);
@@ -60,9 +63,13 @@ export function AuthScreen() {
     </> : account ? <>
       <p>Signed in as {account.email}</p>
       <button className="auth-action" disabled={busy || !csrfToken} onClick={() => void perform(async () => {
-        await logout(csrfToken!); setAccount(undefined); setCsrfToken(undefined); setMessage('You are signed out.');
+        await logout(csrfToken!); setAccount(undefined); setCsrfToken(undefined); setMode('choose'); setMessage('You are signed out.');
       })}>Sign out</button>
-    </> : <form onSubmit={event => {
+    </> : mode === 'choose' ? <div className="auth-choices">
+      <p>Request beta access, or sign in if you’ve already been approved.</p>
+      <button type="button" className="auth-action" onClick={() => { setMode('access'); setMessage(''); setError(''); }}>Request beta access</button>
+      <button type="button" onClick={() => { setMode('login'); setMessage(''); setError(''); }}>Sign in</button>
+    </div> : <form onSubmit={event => {
       event.preventDefault();
       if (!challengeToken || actionLock.current || cooldownUntil.current > Date.now()) return;
       void perform(async () => {
