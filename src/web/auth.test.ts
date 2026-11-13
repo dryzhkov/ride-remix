@@ -81,7 +81,7 @@ test('access request UI requires verification and submits the action-bound token
     });
     assert.equal(submit.disabled, true);
     assert.equal(accessSubmissions, 1);
-    assert.match(submit.textContent!, /Try again in/);
+    assert.match(submit.textContent!, /Access requested/);
     assert.match(container.textContent!, /Access requires approval/);
     dom.window.history.replaceState(null, '', '/auth/login');
     await act(async () => { root.render(createElement(App, { key: 'login' })); });
@@ -104,6 +104,7 @@ test('access request UI requires verification and submits the action-bound token
     });
     assert.equal(loginSubmissions, 1);
     assert.equal(container.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled, true);
+    assert.match(container.querySelector('button[type=submit]')!.textContent!, /Link requested/);
   } finally {
     await act(async () => { root.unmount(); });
     dom.window.close();

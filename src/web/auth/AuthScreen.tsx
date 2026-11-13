@@ -72,9 +72,9 @@ export function AuthScreen() {
       });
     }}>
       <label htmlFor="login-email">Email address</label>
-      <input id="login-email" type="email" autoComplete="email" maxLength={254} required value={email} onChange={e => setEmail(e.target.value)} />
+      <input disabled={busy} id="login-email" type="email" autoComplete="email" maxLength={254} required value={email} onChange={e => setEmail(e.target.value)} />
       <TurnstileChallenge key={`${accessRequest}-${challengeAttempt}`} action={accessRequest ? 'access_request' : 'login'} onToken={receiveToken} />
-      <button className="auth-action" type="submit" disabled={busy || cooldown > 0 || !challengeToken}>{cooldown > 0 ? `Try again in ${cooldown}s` : busy ? 'Submitting…' : accessRequest ? 'Submit access request' : 'Email me a sign-in link'}</button>
+      <button className="auth-action" type="submit" aria-busy={busy} disabled={busy || cooldown > 0 || !challengeToken}>{cooldown > 0 ? `${accessRequest ? 'Access requested' : 'Link requested'} · ${cooldown}s` : busy ? 'Submitting…' : accessRequest ? 'Submit access request' : 'Email me a sign-in link'}</button>
       <p>{accessRequest ? 'The beta is closed. Your email must be approved before you can sign in.' : 'Use an approved email address to sign in.'}</p>
       <p><a href={accessRequest ? '/auth/login' : '/invite'}>{accessRequest ? 'Already approved? Sign in' : 'Request beta access'}</a></p>
     </form>}

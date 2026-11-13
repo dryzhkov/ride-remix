@@ -59,6 +59,8 @@ p { line-height: 1.5; }
 .auth-screen { max-width: 35rem; }
 .auth-screen form { display: grid; gap: 1rem; }
 .auth-action { color: white; background: #194c38; }
+.auth-action:disabled { color: #56665d; background: #dce3dd; border-color: #dce3dd; box-shadow: none; cursor: not-allowed; }
+.auth-action[aria-busy="true"] { cursor: progress; }
 .auth-screen [role=alert] { color: #9b301b; }
 .settings-screen { display: grid; gap: 1.2rem; }
 .settings-screen .recovery-screen { background: var(--paper); padding: 1rem; border: 1px solid var(--line); border-radius: 1.1rem; }
